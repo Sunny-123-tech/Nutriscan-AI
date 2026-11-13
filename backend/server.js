@@ -2359,6 +2359,79 @@ app.get('/api/products', async (req, res) => {
     }
 });
 
+// Create or Upsert Product in MongoDB
+app.post('/api/products', async (req, res) => {
+    try {
+        const { barcode, name, brand, category, ingredients, processingLevel, nutrition } = req.body;
+        const normalizedBarcode = String(barcode || '').trim();
+
+        if (!normalizedBarcode) {
+            return res.status(400).json({ error: 'Barcode is required.' });
+        }
+        if (!name || !name.trim()) {
+            return res.status(400).json({ error: 'Product name is required.' });
+        }
+
+        // Parse ingredients string if passed as comma-separated or text
+        let ingredientsArray = [];
+        if (Array.isArray(ingredients)) {
+            ingredientsArray = ingredients;
+        } else if (typeof ingredients === 'string' && ingredients.trim()) {
+            ingredientsArray = ingredients.split(/[,;\n]/).map(i => i.trim()).filter(Boolean).map(ingName => {
+                const lower = ingName.toLowerCase();
+                let concern = 'low';
+                let type = 'ingredient';
+                if (lower.includes('sugar') || lower.includes('syrup') || lower.includes('maltodextrin') || lower.includes('sweetener')) {
+                    concern = 'high';
+                    type = 'additive';
+                } else if (lower.includes('oil') || lower.includes('fat') || lower.includes('sodium') || lower.includes('preservative') || lower.includes('ins') || lower.includes('msg')) {
+                    concern = 'moderate';
+                    type = 'additive';
+                }
+                return { name: ingName, type, concern };
+            });
+        }
+
+        const nutritionData = nutrition || {};
+        const productDoc = {
+            barcode: normalizedBarcode,
+            name: name.trim(),
+            brand: (brand && brand.trim()) || 'Unknown Brand',
+            category: (category && category.trim()) || 'Packaged Foods',
+            ingredients: ingredientsArray,
+            nutritionPer100g: {
+                energy: Number(nutritionData.energy) || 0,
+                protein: Number(nutritionData.protein) || 0,
+                carbohydrates: Number(nutritionData.carbohydrates) || 0,
+                sugars: Number(nutritionData.sugars) || 0,
+                fat: Number(nutritionData.fat) || 0,
+                saturatedFat: Number(nutritionData.saturatedFat) || 0,
+                transFat: Number(nutritionData.transFat) || 0,
+                sodium: Number(nutritionData.sodium) || 0,
+                fiber: Number(nutritionData.fiber) || 0,
+                wholeGrain: Boolean(nutritionData.wholeGrain)
+            },
+            processingLevel: processingLevel || 'processed',
+            additivesCount: ingredientsArray.filter(i => i.type === 'additive').length,
+            source: 'User Manual Entry',
+            createdAt: new Date().toISOString()
+        };
+
+        const productsCol = collections().products;
+        await productsCol.updateOne(
+            { barcode: normalizedBarcode },
+            { $set: productDoc },
+            { upsert: true }
+        );
+
+        console.log(`📦 Saved/Upserted product "${productDoc.name}" (${normalizedBarcode}) into MongoDB!`);
+        res.status(201).json({ success: true, product: productDoc });
+    } catch (error) {
+        console.error('Failed to save product:', error);
+        res.status(500).json({ error: 'Failed to save product to database: ' + error.message });
+    }
+});
+
 // Barcode validation helper (supports both numeric and alphanumeric barcodes)
 const BARCODE_REGEX = /^[A-Za-z0-9._:\-]{3,64}$/;
 
