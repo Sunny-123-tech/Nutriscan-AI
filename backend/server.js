@@ -1,8 +1,9 @@
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
-const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
@@ -2735,6 +2736,41 @@ app.get('/api/adbms/syllabus-map', (req, res) => {
                 nutriScanImplementation: 'Interactive KDD 7-step pipeline, live Apriori additive co-occurrence rule miner with adjustable support/confidence, and K-Means food vector cluster visualizer.'
             }
         ]
+    });
+});
+
+// Database Connection Status & Diagnostics Endpoint
+app.get('/api/db-status', async (req, res) => {
+    let mongoConnected = false;
+    let pingTimeMs = null;
+    let collectionsList = [];
+    let errorDetail = null;
+
+    if (!useFallback && db) {
+        try {
+            const start = performance.now();
+            await db.command({ ping: 1 });
+            pingTimeMs = Number((performance.now() - start).toFixed(2));
+            mongoConnected = true;
+            const cols = await db.listCollections().toArray();
+            collectionsList = cols.map(c => c.name);
+        } catch (err) {
+            errorDetail = err.message;
+        }
+    }
+
+    res.json({
+        status: 'online',
+        databaseEngine: useFallback ? 'Resilient Local Memory Store' : 'MongoDB Atlas Live Cloud Cluster',
+        isConnectedToAtlas: mongoConnected,
+        databaseName: useFallback ? 'nutriscan_local' : (db ? db.databaseName : 'none'),
+        pingTimeMs: pingTimeMs,
+        collections: collectionsList.length > 0 ? collectionsList : ['users', 'profiles', 'products', 'mealLogs'],
+        atlasUriConfigured: Boolean(process.env.MONGO_URI),
+        error: errorDetail,
+        message: mongoConnected
+            ? 'Connected to MongoDB Atlas cluster successfully!'
+            : 'Running on resilient local database store. To connect MongoDB Atlas, provide MONGO_URI in .env and ensure IP 0.0.0.0/0 is allowed in Atlas Network Access.'
     });
 });
 

@@ -7,6 +7,8 @@
     "install": "cd backend && npm install",
     "build": "cd backend && npm install",
     "start": "cd backend && npm start",
-    "test:adbms": "cd backend && npm run test:adbms"
+    "test:adbms": "cd backend && npm run test:adbms",
+    "check:db": "cd backend && npm run check:db"
   }
 }
+
