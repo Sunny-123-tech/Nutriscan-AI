@@ -6,3 +6,4 @@ backend/data/.auth-secret
 npm-debug.log*
 .DS_Store
 Thumbs.db
+

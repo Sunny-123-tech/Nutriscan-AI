@@ -1,0 +1,12 @@
+{
+  "name": "nutriscan-ai",
+  "version": "1.0.0",
+  "description": "NutriScan AI Assistant",
+  "main": "backend/server.js",
+  "scripts": {
+    "install": "cd backend && npm install",
+    "build": "cd backend && npm install",
+    "start": "cd backend && npm start",
+    "test:adbms": "cd backend && npm run test:adbms"
+  }
+}
