@@ -1,0 +1,2588 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NutriScan AI — Cutting-Edge Precision Nutrition & Health Intelligence</title>
+    <meta name="description"
+        content="AI-powered personalized food safety, barcode and ingredient analysis tailored to chronic diseases, dietary budgets, and global healthcare trends.">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<body>
+    <!-- Top Progress Bar (Visual feedback) -->
+    <div id="pageProgressBar" class="page-progress-bar"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar" id="mainNavbar">
+        <div class="nav-brand" onclick="navigateTo('home')">
+            <div class="brand-logo-glow">
+                <i class="fas fa-leaf"></i>
+            </div>
+            <span class="brand-title">NutriScan <span class="ai-badge">AI 2.0</span></span>
+        </div>
+
+        <div class="nav-links">
+            <a href="#home" class="active" id="navHome"><i class="fas fa-house"></i> Home</a>
+            <a href="#scan" id="navScan"><i class="fas fa-barcode"></i> Scan Hub</a>
+            <a href="#adbms" id="navADBMS"><i class="fas fa-database"></i> ADBMS Studio</a>
+            <a href="#trends" id="navTrends"><i class="fas fa-chart-line"></i> Health Trends</a>
+            <a href="#profile" id="navProfile"><i class="fas fa-user-gear"></i> Health Plan</a>
+            <a href="#about" id="navAbout"><i class="fas fa-circle-info"></i> About</a>
+        </div>
+
+        <div class="nav-actions">
+            <!-- Daily Log Quick Counter -->
+            <button class="btn-intake-badge" id="btnOpenIntakeModal" onclick="openIntakeModal()"
+                title="Today's Nutrition Budget">
+                <i class="fas fa-chart-pie"></i>
+                <span class="intake-label">Daily Log</span>
+                <span class="intake-count" id="dailyLogCount">0</span>
+            </button>
+
+            <!-- Theme Toggle -->
+            <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle Dark/Light Theme"
+                aria-label="Toggle Theme">
+                <i class="fas fa-sun light-icon"></i>
+                <i class="fas fa-moon dark-icon"></i>
+            </button>
+
+            <!-- Auth Action -->
+            <div class="auth-actions" id="authActions">
+                <button class="btn-auth" onclick="openAuthModal('login')">
+                    <i class="fas fa-user"></i> <span>Sign in</span>
+                </button>
+            </div>
+
+            <!-- Mobile Menu Toggle -->
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Open Menu">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Navigation Drawer -->
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu-header">
+            <div class="nav-brand">
+                <i class="fas fa-leaf"></i>
+                <span>NutriScan AI</span>
+            </div>
+            <button class="modal-close" onclick="toggleMobileMenu()">&times;</button>
+        </div>
+        <div class="mobile-nav-items">
+            <a href="#home" onclick="toggleMobileMenu()"><i class="fas fa-house"></i> Home</a>
+            <a href="#scan" onclick="toggleMobileMenu()"><i class="fas fa-barcode"></i> Scan Hub</a>
+            <a href="#adbms" onclick="toggleMobileMenu()"><i class="fas fa-database"></i> ADBMS Studio</a>
+            <a href="#trends" onclick="toggleMobileMenu()"><i class="fas fa-chart-line"></i> Health Trends</a>
+            <a href="#profile" onclick="toggleMobileMenu()"><i class="fas fa-user-gear"></i> Health Profile</a>
+            <a href="#about" onclick="toggleMobileMenu()"><i class="fas fa-circle-info"></i> About</a>
+        </div>
+        <div class="mobile-menu-footer">
+            <button class="btn-primary btn-full" onclick="openIntakeModal(); toggleMobileMenu();">
+                <i class="fas fa-chart-pie"></i> View Daily Nutrition Budget
+            </button>
+        </div>
+    </div>
+
+    <!-- Auth & Health Onboarding Modal -->
+    <div class="auth-modal" id="authModal" aria-hidden="true">
+        <div class="auth-dialog" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+            <button class="modal-close" onclick="closeAuthModal()" aria-label="Close">&times;</button>
+
+            <div class="auth-header">
+                <div class="auth-icon-badge"><i class="fas fa-shield-heart"></i></div>
+                <h2 id="authTitle">Welcome to NutriScan AI</h2>
+                <p id="authSubtitle">Sign in to save your personal clinical health profile.</p>
+                <p class="auth-error" id="authError" role="alert"></p>
+            </div>
+
+            <!-- Multi-step Indicator -->
+            <div class="onboarding-steps" id="onboardingSteps" style="display:none;">
+                <div class="step-item active" id="stepIndicator1">
+                    <span class="step-num">1</span>
+                    <span class="step-label">Account</span>
+                </div>
+                <div class="step-line" id="stepLine1"></div>
+                <div class="step-item" id="stepIndicator2">
+                    <span class="step-num">2</span>
+                    <span class="step-label">Body & Goals</span>
+                </div>
+                <div class="step-line" id="stepLine2"></div>
+                <div class="step-item" id="stepIndicator3">
+                    <span class="step-num">3</span>
+                    <span class="step-label">Health & Diet</span>
+                </div>
+            </div>
+
+            <form id="authForm" onsubmit="submitAuth(event)" novalidate>
+                <!-- Step 1: Account basics -->
+                <div class="auth-step-panel active" id="authStep1">
+                    <div class="input-group" id="registerNameField" style="display:none;">
+                        <label for="authName"><i class="fas fa-user"></i> Full Name</label>
+                        <input id="authName" type="text" autocomplete="name" placeholder="e.g., Alex Sharma">
+                    </div>
+                    <div class="input-group">
+                        <label for="authEmail"><i class="fas fa-envelope"></i> Email Address</label>
+                        <input id="authEmail" type="email" autocomplete="email" required placeholder="you@example.com">
+                    </div>
+                    <div class="input-group">
+                        <label for="authPassword"><i class="fas fa-lock"></i> Password</label>
+                        <input id="authPassword" type="password" autocomplete="current-password" required minlength="8"
+                            placeholder="Minimum 8 characters">
+                    </div>
+
+                    <div class="auth-step-actions">
+                        <button class="btn-primary btn-full" id="authSubmit" type="submit">Sign in</button>
+                        <button class="btn-primary btn-full" id="btnNextStep1" type="button" style="display:none;"
+                            onclick="goToOnboardingStep(2)">
+                            Next: Body &amp; Goals <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Body Metrics & Goals -->
+                <div class="auth-step-panel" id="authStep2" style="display:none;">
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label for="regHeight"><i class="fas fa-ruler-vertical"></i> Height (cm)</label>
+                            <input id="regHeight" type="number" min="50" max="250" placeholder="e.g., 175">
+                        </div>
+                        <div class="input-group">
+                            <label for="regWeight"><i class="fas fa-weight-scale"></i> Weight (kg)</label>
+                            <input id="regWeight" type="number" min="20" max="300" step="0.5" placeholder="e.g., 70">
+                        </div>
+                        <div class="input-group">
+                            <label for="regAge"><i class="fas fa-calendar"></i> Age (years)</label>
+                            <input id="regAge" type="number" min="1" max="120" placeholder="e.g., 28">
+                        </div>
+                        <div class="input-group">
+                            <label for="regGender"><i class="fas fa-venus-mars"></i> Gender</label>
+                            <select id="regGender">
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="regActivity"><i class="fas fa-person-running"></i> Activity Level</label>
+                        <select id="regActivity">
+                            <option value="sedentary">Sedentary (Desk job / little exercise)</option>
+                            <option value="light">Lightly Active (1-3 days/wk)</option>
+                            <option value="moderate" selected>Moderately Active (3-5 days/wk)</option>
+                            <option value="very">Very Active (6-7 days/wk)</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="regGoal"><i class="fas fa-bullseye"></i> Primary Health Goal</label>
+                        <select id="regGoal">
+                            <option value="maintenance">Healthy Weight Maintenance</option>
+                            <option value="weight_loss">Weight Loss &amp; Fat Reduction</option>
+                            <option value="muscle_gain">Muscle Building &amp; High Protein</option>
+                            <option value="diabetes_care">Diabetes &amp; Blood Sugar Control</option>
+                            <option value="heart_health">Heart Health &amp; Low Cholesterol</option>
+                            <option value="low_sodium">Blood Pressure &amp; Low Sodium</option>
+                            <option value="clean_eating">Clean Eating &amp; Whole Foods</option>
+                        </select>
+                    </div>
+
+                    <div class="auth-step-actions multi-buttons">
+                        <button class="btn-secondary" type="button" onclick="goToOnboardingStep(1)">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                        <button class="btn-primary" type="button" onclick="goToOnboardingStep(3)">
+                            Next: Health &amp; Allergies <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Medical Conditions & Allergies -->
+                <div class="auth-step-panel" id="authStep3" style="display:none;">
+                    <div class="onboarding-section">
+                        <label class="section-title"><i class="fas fa-heart-pulse"></i> Chronic Health Conditions
+                            (Select any)</label>
+                        <div class="checkbox-chips-grid">
+                            <label class="chip-checkbox"><input type="checkbox" id="regCondDiabetes"><span><i
+                                        class="fas fa-droplet"></i> Diabetes / Pre-diabetes</span></label>
+                            <label class="chip-checkbox"><input type="checkbox" id="regCondHypertension"><span><i
+                                        class="fas fa-heart-pulse"></i> Hypertension (High BP)</span></label>
+                            <label class="chip-checkbox"><input type="checkbox" id="regCondHeart"><span><i
+                                        class="fas fa-heart-crack"></i> Heart Disease</span></label>
+                            <label class="chip-checkbox"><input type="checkbox" id="regCondCholesterol"><span><i
+                                        class="fas fa-chart-line"></i> High Cholesterol</span></label>
+                            <label class="chip-checkbox"><input type="checkbox" id="regCondKidney"><span><i
+                                        class="fas fa-kidney"></i> Kidney Disease</span></label>
+                            <label class="chip-checkbox"><input type="checkbox" id="regCondFattyLiver"><span><i
+                                        class="fas fa-leaf"></i> Fatty Liver</span></label>
+                            <label class="chip-checkbox"><input type="checkbox" id="regCondGERD"><span><i
+                                        class="fas fa-fire-flame-curved"></i> Acid Reflux / GERD</span></label>
+                            <label class="chip-checkbox"><input type="checkbox" id="regCondCeliac"><span><i
+                                        class="fas fa-wheat-awn-circle-exclamation"></i> Celiac (Gluten)</span></label>
+                            <label class="chip-checkbox"><input type="checkbox" id="regCondLactose"><span><i
+                                        class="fas fa-glass-water"></i> Lactose Intolerance</span></label>
+                            <label class="chip-checkbox"><input type="checkbox" id="regCondPCOD"><span><i
+                                        class="fas fa-venus"></i> PCOD / PCOS</span></label>
+                        </div>
+                        <div class="custom-entity-box">
+                            <label for="regOtherConditions" class="custom-entity-label"><i
+                                    class="fas fa-pen-to-square"></i> Other Medical Conditions (Comma separated)</label>
+                            <input type="text" id="regOtherConditions"
+                                placeholder="e.g. Gout, Thyroid, IBS, Asthma, Migraines..." class="custom-entity-input">
+                        </div>
+                    </div>
+
+                    <div class="onboarding-section">
+                        <label class="section-title"><i class="fas fa-triangle-exclamation"></i> Food Allergies</label>
+                        <div class="checkbox-chips-grid">
+                            <label class="chip-checkbox"><input type="checkbox"
+                                    id="regAllergyPeanuts"><span>Peanuts</span></label>
+                            <label class="chip-checkbox"><input type="checkbox" id="regAllergyTreeNuts"><span>Tree
+                                    Nuts</span></label>
+                            <label class="chip-checkbox"><input type="checkbox" id="regAllergyDairy"><span>Dairy /
+                                    Milk</span></label>
+                            <label class="chip-checkbox"><input type="checkbox" id="regAllergyGluten"><span>Gluten /
+                                    Wheat</span></label>
+                            <label class="chip-checkbox"><input type="checkbox"
+                                    id="regAllergySoy"><span>Soy</span></label>
+                            <label class="chip-checkbox"><input type="checkbox"
+                                    id="regAllergyEggs"><span>Eggs</span></label>
+                            <label class="chip-checkbox"><input type="checkbox"
+                                    id="regAllergyShellfish"><span>Shellfish</span></label>
+                            <label class="chip-checkbox"><input type="checkbox"
+                                    id="regAllergySesame"><span>Sesame</span></label>
+                        </div>
+                        <div class="custom-entity-box">
+                            <label for="regOtherAllergies" class="custom-entity-label"><i
+                                    class="fas fa-pen-to-square"></i> Other Allergens to Flag</label>
+                            <input type="text" id="regOtherAllergies"
+                                placeholder="e.g. Mustard, Sulfites, MSG, Palm oil, Aspartame..."
+                                class="custom-entity-input">
+                        </div>
+                    </div>
+
+                    <div class="onboarding-section">
+                        <label class="section-title"><i class="fas fa-utensils"></i> Dietary Preference</label>
+                        <div class="radio-chips-grid">
+                            <label class="chip-radio"><input type="radio" name="regDiet" value="none" checked><span>No
+                                    Restrictions</span></label>
+                            <label class="chip-radio"><input type="radio" name="regDiet"
+                                    value="vegetarian"><span>Vegetarian</span></label>
+                            <label class="chip-radio"><input type="radio" name="regDiet"
+                                    value="vegan"><span>Vegan</span></label>
+                            <label class="chip-radio"><input type="radio" name="regDiet" value="keto"><span>Keto / Low
+                                    Carb</span></label>
+                            <label class="chip-radio"><input type="radio" name="regDiet"
+                                    value="jain"><span>Jain</span></label>
+                        </div>
+                    </div>
+
+                    <div class="auth-step-actions multi-buttons">
+                        <button class="btn-secondary" type="button" onclick="goToOnboardingStep(2)">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                        <button class="btn-primary" id="btnCompleteRegister" type="button" onclick="submitAuth(event)">
+                            <i class="fas fa-check-circle"></i> Create Account &amp; Save Plan
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <p class="auth-switch" id="authSwitch">New to NutriScan? <button type="button"
+                    onclick="openAuthModal('register')">Create an account</button></p>
+        </div>
+    </div>
+
+    <!-- MAIN APP WRAPPER -->
+    <main class="app-main">
+
+        <!-- 1. HOME / HERO SECTION -->
+        <section id="home" class="section active">
+            <div class="hero">
+                <div class="hero-content">
+                    <div class="badge-cutting-edge">
+                        <span class="pulse-dot"></span>
+                        <i class="fas fa-wand-magic-sparkles"></i>
+                        <span>Next-Gen Healthcare Innovation</span>
+                    </div>
+                    <h1>Precision AI Food Intelligence for a <span class="gradient-text">Healthier Generation.</span>
+                    </h1>
+                    <p class="hero-description">
+                        Cutting-edge technology in these sectors continues to be in demand. Recent shifts in healthcare
+                        trends and growing populations present an array of opportunities for innovation. NutriScan AI
+                        decodes barcodes, nutrition facts, and ultra-processed additives against your personal clinical
+                        profile in real time.
+                    </p>
+
+                    <!-- Quick Sample Scan Pills Tray -->
+                    <div class="quick-demo-container">
+                        <span class="quick-demo-label"><i class="fas fa-bolt"></i> Instant Demo Scans:</span>
+                        <div class="quick-chips-wrapper">
+                            <button class="demo-chip chip-warning" onclick="quickAnalyzeBarcode('8901234567890')">
+                                <span class="chip-dot red"></span> Choc Biscuits (UPF)
+                            </button>
+                            <button class="demo-chip chip-healthy" onclick="quickAnalyzeBarcode('8901234567891')">
+                                <span class="chip-dot green"></span> Rolled Oats (Healthy)
+                            </button>
+                            <button class="demo-chip chip-danger" onclick="quickAnalyzeBarcode('8901234567892')">
+                                <span class="chip-dot orange"></span> Instant Noodles (High Na)
+                            </button>
+                            <button class="demo-chip chip-healthy"
+                                onclick="quickAnalyzeBarcode('SKU-ORGANIC-ALMOND-MILK')">
+                                <span class="chip-dot green"></span> Almond Milk (Clean)
+                            </button>
+                            <button class="demo-chip chip-warning" onclick="quickAnalyzeBarcode('8901234567895')">
+                                <span class="chip-dot red"></span> Fizzy Cola (Sugar Spike)
+                            </button>
+                            <button class="demo-chip chip-healthy"
+                                onclick="quickAnalyzeBarcode('PROD-ROASTED-MAKHANA')">
+                                <span class="chip-dot green"></span> Himalayan Makhana
+                            </button>
+                            <button class="demo-chip chip-healthy"
+                                onclick="quickAnalyzeBarcode('PROD-MATCHA-GREEN-TEA')">
+                                <span class="chip-dot green"></span> Matcha Green Tea
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="hero-buttons">
+                        <button class="btn-primary btn-glow" onclick="navigateTo('scan')">
+                            <i class="fas fa-camera"></i> Launch Scan Hub
+                        </button>
+                        <button class="btn-secondary" onclick="navigateTo('adbms')">
+                            <i class="fas fa-database"></i> ADBMS Studio (Units I–VI)
+                        </button>
+                        <button class="btn-outline" onclick="navigateTo('trends')">
+                            <i class="fas fa-chart-line"></i> Health Trends
+                        </button>
+                        <button class="btn-outline" onclick="navigateTo('profile')">
+                            <i class="fas fa-user-gear"></i> Set Profile
+                        </button>
+                    </div>
+
+                    <div class="hero-stats-glass">
+                        <div class="stat-box">
+                            <span class="stat-number">10K+</span>
+                            <span class="stat-label">Products Analyzed</span>
+                        </div>
+                        <div class="stat-divider"></div>
+                        <div class="stat-box">
+                            <span class="stat-number">12+</span>
+                            <span class="stat-label">Chronic Conditions</span>
+                        </div>
+                        <div class="stat-divider"></div>
+                        <div class="stat-box">
+                            <span class="stat-number">&lt; 0.2s</span>
+                            <span class="stat-label">AI Decision Speed</span>
+                        </div>
+                        <div class="stat-divider"></div>
+                        <div class="stat-box">
+                            <span class="stat-number">100%</span>
+                            <span class="stat-label">Personalized Plan</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hero-visual">
+                    <div class="phone-mockup-3d">
+                        <div class="glow-orb"></div>
+                        <div class="phone-screen">
+                            <div class="mockup-top-bar">
+                                <span class="mockup-time">12:45</span>
+                                <span class="mockup-status-icons"><i class="fas fa-wifi"></i> <i
+                                        class="fas fa-battery-full"></i></span>
+                            </div>
+                            <div class="mockup-header">
+                                <i class="fas fa-shield-halved"></i>
+                                <span>NutriScan Live Vision</span>
+                                <span class="live-indicator"><span class="blink"></span> LIVE</span>
+                            </div>
+                            <div class="mockup-camera">
+                                <div class="scan-frame-animated">
+                                    <div class="laser-beam"></div>
+                                    <div class="corner top-left"></div>
+                                    <div class="corner top-right"></div>
+                                    <div class="corner bottom-left"></div>
+                                    <div class="corner bottom-right"></div>
+                                </div>
+                                <div class="detected-barcode-tag">
+                                    <i class="fas fa-barcode"></i> 8901234567891
+                                </div>
+                            </div>
+                            <div class="mockup-result-card">
+                                <div class="mockup-score-row">
+                                    <div class="mockup-badge safe"><i class="fas fa-check-circle"></i> SAFE &amp;
+                                        RECOMMENDED</div>
+                                    <span class="mockup-score">96% Match</span>
+                                </div>
+                                <p class="mockup-summary">Low glycemic index, rich in prebiotic beta-glucan. Fully
+                                    aligned with your Diabetes &amp; Low Sodium protocol.</p>
+                                <div class="mockup-macro-mini">
+                                    <span>Sugar: <strong>0.8g</strong></span>
+                                    <span>Sodium: <strong>15mg</strong></span>
+                                    <span>Fiber: <strong>11g</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Healthcare Innovation Cards Grid -->
+            <div class="section-heading-center">
+                <span class="sub-tag"><i class="fas fa-microscope"></i> Cutting-Edge Capabilities</span>
+                <h2>Pioneering Preventive Nutrition Intelligence</h2>
+                <p>Designed to tackle surging lifestyle diseases and empower aging, expanding populations worldwide.</p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card feature-glow feature-clickable"
+                    onclick="navigateTo('profile'); showToast('Set your health profile to activate the Personalized Clinical Matrix!')"
+                    style="cursor:pointer;">
+                    <div class="feature-icon"><i class="fas fa-heart-pulse"></i></div>
+                    <h3>Personalized Clinical Matrix</h3>
+                    <p>Calculates individualized limits for sugars, saturated fats, sodium, and calories adjusted for
+                        Diabetes, Hypertension, CVD, PCOD, and NAFLD.</p>
+                    <span class="feature-cta"><i class="fas fa-arrow-right"></i> Set My Health Profile</span>
+                </div>
+                <div class="feature-card feature-glow feature-clickable" onclick="openNutriBotDirect()"
+                    style="cursor:pointer;">
+                    <div class="feature-icon"><i class="fas fa-brain"></i></div>
+                    <h3>NutriBot AI Clinical Copilot</h3>
+                    <p>Ask in-depth questions about blood sugar spikes, late-night safety, E-numbers, or tailored
+                        dietary alternatives in real time.</p>
+                    <span class="feature-cta"><i class="fas fa-comments"></i> Open NutriBot Chat</span>
+                </div>
+                <div class="feature-card feature-glow feature-clickable"
+                    onclick="navigateTo('scan'); setTimeout(()=>quickAnalyzeBarcode('8901030383701'),300)"
+                    style="cursor:pointer;">
+                    <div class="feature-icon"><i class="fas fa-shuffle"></i></div>
+                    <h3>Smart "Swap &amp; Upgrade"</h3>
+                    <p>When an item is flagged for high sugar or ultra-processing, our engine instantly recommends 3
+                        cleaner, whole-food swaps with macro comparisons.</p>
+                    <span class="feature-cta"><i class="fas fa-barcode"></i> Try a Demo Scan</span>
+                </div>
+                <div class="feature-card feature-glow feature-clickable" onclick="openBudgetPlanner()"
+                    style="cursor:pointer;">
+                    <div class="feature-icon"><i class="fas fa-chart-pie"></i></div>
+                    <h3>Live Daily Budget Tracker</h3>
+                    <p>Log scanned items to your daily intake ledger. Monitor remaining daily allowances and receive
+                        clinical threshold alerts in real time.</p>
+                    <span class="feature-cta"><i class="fas fa-calendar-day"></i> Open Budget Tracker</span>
+                </div>
+                <div class="feature-card feature-glow feature-clickable"
+                    onclick="navigateTo('scan'); setTimeout(()=>switchScanTab('barcode'),200)" style="cursor:pointer;">
+                    <div class="feature-icon"><i class="fas fa-fingerprint"></i></div>
+                    <h3>NOVA &amp; Additives Radar</h3>
+                    <p>Classifies industrial formulations from NOVA 1 to NOVA 4 while decoding synthetic preservatives
+                        (TBHQ, BHA), artificial sweeteners, and emulsifiers.</p>
+                    <span class="feature-cta"><i class="fas fa-flask"></i> Scan a Product</span>
+                </div>
+                <div class="feature-card feature-glow feature-clickable" onclick="demoVoiceVerdict()"
+                    style="cursor:pointer;">
+                    <div class="feature-icon"><i class="fas fa-volume-high"></i></div>
+                    <h3>Voice Audio Verdict (TTS)</h3>
+                    <p>Designed for universal accessibility, busy grocery shoppers, and elderly demographics with
+                        one-click voice synthesized verdicts.</p>
+                    <span class="feature-cta"><i class="fas fa-play"></i> Hear Demo Verdict</span>
+                </div>
+                <div class="feature-card feature-glow feature-clickable" onclick="navigateTo('adbms')"
+                    style="cursor:pointer; border-color: rgba(16, 185, 129, 0.4);">
+                    <div class="feature-icon"><i class="fas fa-database"></i></div>
+                    <h3>ADBMS Academic &amp; Research Lab</h3>
+                    <p>Interactive laboratory covering all 6 syllabus units: Relational Constraints, Parallel Hash-Join, Distributed 2PC, NoSQL Pipelines, OLAP Cubes, and Apriori Mining.</p>
+                    <span class="feature-cta"><i class="fas fa-arrow-right"></i> Open ADBMS Studio (Units I–VI)</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. MULTI-MODAL SCAN HUB -->
+        <section id="scan" class="section">
+            <div class="scan-container">
+                <div class="section-header-compact">
+                    <span class="sub-tag"><i class="fas fa-barcode"></i> Multi-Modal Scanning Hub</span>
+                    <h2>Analyze Your Food in Seconds</h2>
+                    <p class="subtitle">Choose your preferred input method: Barcode, Live Camera, AI Photo Label OCR, or
+                        Ingredients Paste.</p>
+                </div>
+
+                <!-- Global Food Search Explorer -->
+                <div class="global-search-bar-wrapper">
+                    <div class="search-input-group">
+                        <i class="fas fa-magnifying-glass search-icon"></i>
+                        <input type="text" id="globalProductSearchInput"
+                            placeholder="Search catalog (e.g., Oats, Almond Milk, Biscuits, Quinoa, Greek Yogurt...)"
+                            oninput="filterCatalogSearch(this.value)">
+                        <button class="search-clear-btn" id="searchClearBtn" onclick="clearCatalogSearch()"
+                            style="display:none;">&times;</button>
+                    </div>
+                    <div class="catalog-search-dropdown" id="catalogSearchDropdown" style="display:none;"></div>
+                </div>
+
+                <!-- Scan Mode Tabs -->
+                <div class="scan-tabs">
+                    <button class="scan-tab active" id="barcodeScanTab" onclick="switchScanTab('barcode', event)">
+                        <i class="fas fa-barcode"></i> Barcode
+                    </button>
+                    <button class="scan-tab" id="cameraScanTab" onclick="switchScanTab('camera', event)">
+                        <i class="fas fa-camera"></i> Live Camera
+                    </button>
+                    <button class="scan-tab" id="ocrScanTab" onclick="switchScanTab('ocr', event)">
+                        <i class="fas fa-file-invoice"></i> AI Label OCR
+                    </button>
+                    <button class="scan-tab" id="ingredientsScanTab" onclick="switchScanTab('ingredients', event)">
+                        <i class="fas fa-list-check"></i> Ingredients Deep-Dive
+                    </button>
+                </div>
+
+                <!-- Tab 1: Barcode Input -->
+                <div class="scan-panel" id="barcodePanel" style="display:block;">
+                    <div class="panel-card">
+                        <div class="input-group">
+                            <label for="barcodeInput"><i class="fas fa-barcode"></i> Enter Barcode or SKU Number</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-barcode"></i>
+                                <input type="text" id="barcodeInput"
+                                    placeholder="e.g. 8901234567891 or SKU-ORGANIC-ALMOND-MILK" maxlength="64"
+                                    onkeydown="if(event.key==='Enter') analyzeBarcode()">
+                            </div>
+                            <p class="hint">Supports 8 to 14 digit EAN/UPC barcodes or alphanumeric catalog SKUs.</p>
+                        </div>
+
+                        <!-- Quick Test Chips -->
+                        <div class="sample-chips-row">
+                            <span class="sample-title">Quick Test:</span>
+                            <span class="chip-pill" onclick="fillAndScanBarcode('8901234567891')">Rolled Oats</span>
+                            <span class="chip-pill" onclick="fillAndScanBarcode('8901234567890')">Choc Biscuits</span>
+                            <span class="chip-pill" onclick="fillAndScanBarcode('8901234567892')">Masala Noodles</span>
+                            <span class="chip-pill" onclick="fillAndScanBarcode('SKU-ORGANIC-ALMOND-MILK')">Almond
+                                Milk</span>
+                            <span class="chip-pill" onclick="fillAndScanBarcode('8901234567893')">Greek Yogurt</span>
+                            <span class="chip-pill" onclick="fillAndScanBarcode('PROD-ROASTED-MAKHANA')">Makhana</span>
+                        </div>
+
+                        <button class="btn-primary btn-full btn-lg" onclick="analyzeBarcode()">
+                            <i class="fas fa-wand-magic-sparkles"></i> Analyze Product with AI
+                        </button>
+                    </div>
+
+                    <!-- Shown when a barcode isn't in the database yet -->
+                    <div class="add-product-section" id="addProductSection" style="display:none;">
+                        <div class="add-product-notice">
+                            <i class="fas fa-circle-info"></i>
+                            <div>
+                                <strong>New Barcode Detected:</strong> <span id="addProductBarcodeDisplay"></span>
+                                <p>No existing record found in MongoDB or Open Food Facts. Save it below to enable
+                                    instant scanning for everyone.</p>
+                            </div>
+                        </div>
+                        <form id="addProductForm" onsubmit="submitAddProduct(event)">
+                            <input type="hidden" id="addProductBarcode">
+                            <div class="input-group">
+                                <label>Product Name *</label>
+                                <input type="text" id="addProductName" required
+                                    placeholder="e.g., Organic Quinoa Crisps">
+                            </div>
+                            <div class="form-grid">
+                                <div class="input-group">
+                                    <label>Brand</label>
+                                    <input type="text" id="addProductBrand" placeholder="e.g., HealthyHarvest">
+                                </div>
+                                <div class="input-group">
+                                    <label>Category</label>
+                                    <input type="text" id="addProductCategory" placeholder="e.g., Snacks">
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label>Ingredients (Comma separated)</label>
+                                <textarea id="addProductIngredients" rows="3"
+                                    placeholder="Whole grain oats, olive oil, sea salt, rosemary extract..."></textarea>
+                            </div>
+                            <div class="input-group">
+                                <label>Processing Level (NOVA estimation)</label>
+                                <select id="addProductProcessing">
+                                    <option value="minimally-processed">Minimally processed (NOVA 1)</option>
+                                    <option value="processed">Processed (NOVA 3)</option>
+                                    <option value="ultra-processed">Ultra-processed (NOVA 4)</option>
+                                    <option value="unknown">Not sure</option>
+                                </select>
+                            </div>
+                            <p class="hint">Nutrition per 100g (Fill known values)</p>
+                            <div class="form-grid nutrition-input-grid">
+                                <div class="input-group"><label>Energy (kcal)</label><input type="number" step="any"
+                                        id="addProductEnergy" placeholder="e.g. 350"></div>
+                                <div class="input-group"><label>Protein (g)</label><input type="number" step="any"
+                                        id="addProductProtein" placeholder="e.g. 10"></div>
+                                <div class="input-group"><label>Carbohydrates (g)</label><input type="number" step="any"
+                                        id="addProductCarbs" placeholder="e.g. 60"></div>
+                                <div class="input-group"><label>Sugars (g)</label><input type="number" step="any"
+                                        id="addProductSugars" placeholder="e.g. 4"></div>
+                                <div class="input-group"><label>Fat (g)</label><input type="number" step="any"
+                                        id="addProductFat" placeholder="e.g. 7"></div>
+                                <div class="input-group"><label>Saturated Fat (g)</label><input type="number" step="any"
+                                        id="addProductSatFat" placeholder="e.g. 1.2"></div>
+                                <div class="input-group"><label>Trans Fat (g)</label><input type="number" step="any"
+                                        id="addProductTransFat" placeholder="e.g. 0"></div>
+                                <div class="input-group"><label>Sodium (mg)</label><input type="number" step="any"
+                                        id="addProductSodium" placeholder="e.g. 150"></div>
+                                <div class="input-group"><label>Fiber (g)</label><input type="number" step="any"
+                                        id="addProductFiber" placeholder="e.g. 8"></div>
+                            </div>
+                            <div class="add-product-actions">
+                                <button type="button" class="btn-secondary"
+                                    onclick="hideAddProductForm()">Cancel</button>
+                                <button type="submit" class="btn-primary" id="addProductSubmit">
+                                    <i class="fas fa-floppy-disk"></i> Save to Database &amp; Analyze
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Live Camera Barcode -->
+                <div class="scan-panel" id="cameraPanel" style="display:none;">
+                    <div class="camera-scanner-wrapper">
+                        <!-- Camera Selector & Controls Toolbar -->
+                        <div class="camera-toolbar">
+                            <div class="camera-select-wrapper">
+                                <i class="fas fa-camera"></i>
+                                <select id="cameraSourceSelect" onchange="changeCameraSource(this.value)">
+                                    <option value="">Select Camera / Auto</option>
+                                </select>
+                            </div>
+                            <div class="camera-tool-btns">
+                                <button type="button" class="btn-tool" id="btnSwitchCamera"
+                                    onclick="switchCameraFacing()" title="Flip Camera">
+                                    <i class="fas fa-camera-rotate"></i> <span>Flip</span>
+                                </button>
+                                <button type="button" class="btn-tool" id="btnToggleTorch" onclick="toggleTorch()"
+                                    title="Toggle Flashlight" style="display:none;">
+                                    <i class="fas fa-bolt"></i> <span>Flash</span>
+                                </button>
+                                <button type="button" class="btn-tool" id="btnToggleBeep" onclick="toggleScanBeep()"
+                                    title="Beep on Scan">
+                                    <i class="fas fa-volume-high" id="beepIcon"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Live Viewport Container -->
+                        <div class="camera-viewport-container">
+                            <div id="html5QrCodeReader"></div>
+                            <div class="camera-reticle" id="cameraReticleOverlay">
+                                <div class="reticle-corner top-left"></div>
+                                <div class="reticle-corner top-right"></div>
+                                <div class="reticle-corner bottom-left"></div>
+                                <div class="reticle-corner bottom-right"></div>
+                                <div class="reticle-line"></div>
+                            </div>
+                            <p id="cameraMessage" class="camera-status-msg">Align food package barcode inside the green
+                                guides.</p>
+                        </div>
+
+                        <div class="camera-controls">
+                            <button class="btn-primary" id="startCameraButton" onclick="startCameraScanner()">
+                                <i class="fas fa-video"></i> Start Live Scanner
+                            </button>
+                            <button class="btn-secondary camera-stop" id="stopCameraButton"
+                                onclick="stopCameraScanner()" style="display:none;">
+                                <i class="fas fa-stop"></i> Stop Camera
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 3: AI Photo / Label OCR -->
+                <div class="scan-panel" id="ocrPanel" style="display:none;">
+                    <div class="panel-card">
+                        <div class="ocr-dropzone" id="ocrDropzone"
+                            onclick="document.getElementById('ocrFileInput').click()">
+                            <input type="file" id="ocrFileInput" accept="image/*" style="display:none;"
+                                onchange="handleOcrFileUpload(event)">
+                            <div class="dropzone-content" id="ocrDropzonePrompt">
+                                <div class="dropzone-icon"><i class="fas fa-cloud-arrow-up"></i></div>
+                                <h4>Upload or Snap Nutrition Label Photo</h4>
+                                <p>Drag &amp; drop a photo of a nutrition table or ingredient list, or click to browse.
+                                </p>
+                                <span class="dropzone-tag">Tesseract AI OCR &bull; PNG, JPG, WEBP</span>
+                            </div>
+                            <div class="ocr-preview-container" id="ocrPreviewContainer" style="display:none;">
+                                <img id="ocrPreviewImage" alt="Nutrition Label Preview">
+                                <div class="ocr-scan-overlay" id="ocrScanOverlay">
+                                    <div class="ocr-laser"></div>
+                                    <span id="ocrStatusText">AI Optical Character Recognition Active...</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- OCR Live Progress Bar -->
+                        <div class="ocr-progress-container" id="ocrProgressContainer" style="display:none;">
+                            <div class="ocr-progress-header">
+                                <span id="ocrProgressLabel">Extracting text...</span>
+                                <span id="ocrProgressVal">0%</span>
+                            </div>
+                            <div class="ocr-progress-track">
+                                <div class="ocr-progress-fill" id="ocrProgressBar" style="width: 0%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Sample Label Test Buttons -->
+                        <div class="ocr-samples-row">
+                            <span class="sample-title">Or Test with Sample Nutrition Text:</span>
+                            <button type="button" class="btn-xs-sample" onclick="loadSampleOcrText('cereal')">Whole
+                                Grain Cereal Label</button>
+                            <button type="button" class="btn-xs-sample" onclick="loadSampleOcrText('chips')">Potato
+                                Chips Label (UPF)</button>
+                            <button type="button" class="btn-xs-sample" onclick="loadSampleOcrText('protein')">Plant
+                                Protein Powder</button>
+                        </div>
+
+                        <div class="input-group" style="margin-top: 1.25rem;">
+                            <label for="ocrRawTextInput"><i class="fas fa-font"></i> Extracted Nutrition Facts / Raw OCR
+                                Text</label>
+                            <textarea id="ocrRawTextInput" rows="4"
+                                placeholder="e.g. Energy: 420 kcal, Protein: 12g, Carbohydrates: 55g, Sugars: 3g, Fat: 8g, Sodium: 140mg, Ingredients: Whole grain oats, seeds, sea salt..."></textarea>
+                        </div>
+
+                        <button class="btn-primary btn-full btn-lg" onclick="parseAndAnalyzeOcr()">
+                            <i class="fas fa-brain"></i> Extract &amp; Analyze with AI
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tab 4: Ingredients Deep-Dive -->
+                <div class="scan-panel" id="ingredientsPanel" style="display:none;">
+                    <div class="panel-card">
+                        <div class="input-group">
+                            <label for="manualProductName"><i class="fas fa-tag"></i> Product Name (Optional)</label>
+                            <input type="text" id="manualProductName" placeholder="e.g., Artisan Multigrain Sourdough">
+                        </div>
+                        <div class="input-group">
+                            <label for="ingredientsInput"><i class="fas fa-list-ul"></i> Paste Ingredients List
+                                *</label>
+                            <textarea id="ingredientsInput" rows="5"
+                                placeholder="Paste full ingredient list here (e.g. Whole Wheat Flour, Water, Yeast, Palm Oil, Sugar, INS 211, Salt...)"></textarea>
+                        </div>
+
+                        <div class="nutrition-lookup-card">
+                            <div class="lookup-header">
+                                <i class="fas fa-cloud-arrow-down"></i>
+                                <div>
+                                    <h4>Auto-Fill Nutrition Facts (Food Info API)</h4>
+                                    <p>Search standard USDA/Food-Info databases to pull real macro values automatically.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="lookup-search-row">
+                                <div class="input-with-icon">
+                                    <i class="fas fa-magnifying-glass"></i>
+                                    <input type="text" id="foodInfoQuery"
+                                        placeholder="Search standard item (e.g., oats, almond butter, cheddar...)">
+                                </div>
+                                <button type="button" class="btn-secondary" id="foodInfoSearchButton"
+                                    onclick="searchFoodInfo()">
+                                    Search
+                                </button>
+                            </div>
+                            <div class="food-info-results" id="foodInfoResults"></div>
+                            <div class="food-info-selected" id="foodInfoSelected"></div>
+                        </div>
+
+                        <button class="btn-primary btn-full btn-lg" onclick="analyzeIngredients()">
+                            <i class="fas fa-flask-vial"></i> Analyze Ingredients &amp; Additives
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Loading State -->
+                <div class="loading-state" id="loadingState" style="display:none;">
+                    <div class="loading-spinner-wrapper">
+                        <div class="spinner-ring"></div>
+                        <div class="spinner-core"><i class="fas fa-leaf"></i></div>
+                    </div>
+                    <h3>Evaluating Nutritional &amp; Clinical Safety</h3>
+                    <p class="loading-sub">Calculating personalized blood sugar impact, NOVA classification, daily
+                        budget usage, and allergen hazards...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. ADVANCED RESULTS VIEW -->
+        <section id="result" class="section">
+            <div class="result-container">
+
+                <!-- Result Navigation & Action Bar -->
+                <div class="result-action-bar">
+                    <button class="btn-back" onclick="navigateTo('scan')">
+                        <i class="fas fa-arrow-left"></i> Scan Another
+                    </button>
+                    <div class="result-utility-buttons">
+                        <!-- TTS Voice Verdict Button -->
+                        <button class="btn-util-action" id="btnAudioVerdict" onclick="playVoiceVerdict()"
+                            title="Audio Voice Verdict">
+                            <i class="fas fa-volume-high"></i> <span id="audioVerdictBtnText">Listen to Verdict</span>
+                        </button>
+                        <!-- Log to Today's Intake -->
+                        <button class="btn-util-action btn-log-action" id="btnLogTodayMeal"
+                            onclick="logCurrentProductToMeal()" title="Log to Daily Budget">
+                            <i class="fas fa-plus"></i> <span>Log to Today's Intake</span>
+                        </button>
+                        <!-- Export / Print Report -->
+                        <button class="btn-util-action" onclick="printNutritionReport()" title="Print / Export Report">
+                            <i class="fas fa-print"></i> <span>Export Report</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Query Execution Time & Parallelism Telemetry Badge -->
+                <div class="query-telemetry-strip" id="queryTelemetryStrip">
+                    <div class="telemetry-left">
+                        <span class="telemetry-icon-pulse"><i class="fas fa-bolt"></i></span>
+                        <div class="telemetry-meta">
+                            <span class="telemetry-title">Database Query Execution Time:</span>
+                            <strong class="telemetry-time" id="queryExecutionTimeDisplay">3.8 ms</strong>
+                        </div>
+                        <span class="telemetry-badge-mode" id="queryEngineModeBadge">Inter-Query Parallel Pool</span>
+                        <span class="telemetry-badge-speedup" id="queryEngineSpeedupBadge"><i class="fas fa-gauge-high"></i> 4.8x faster than sequential DB scan</span>
+                    </div>
+                    <button class="btn-telemetry-benchmark" onclick="navigateTo('adbms')">
+                        <i class="fas fa-database"></i> <span>ADBMS Studio (Units I–VI)</span> <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+
+                <!-- Interactive Precision Health Profile Switcher ("Clinical Simulation") -->
+                <div class="profile-simulation-bar" id="profileSimulationBar">
+                    <div class="sim-bar-header">
+                        <div class="sim-title">
+                            <i class="fas fa-dna"></i>
+                            <div>
+                                <h4>Clinical Health Profile Simulation</h4>
+                                <p>Select any medical health condition to observe real-time recalculations of sugar limits, glycemic hazards, and personal match scores.</p>
+                            </div>
+                        </div>
+                        <span class="sim-active-pill" id="simActiveProfilePill"><i class="fas fa-circle-dot"></i> Active Profile View</span>
+                    </div>
+                    <div class="sim-profile-pills-row" id="simProfilePillsRow">
+                        <button class="sim-pill-btn active" id="simPillActive" onclick="switchResultProfile('active')">
+                            <i class="fas fa-user-shield"></i> <span>My Active Profile</span>
+                        </button>
+                        <button class="sim-pill-btn" id="simPillDiabetic" onclick="switchResultProfile('diabetic')">
+                            <i class="fas fa-droplet"></i> <span>Diabetic (Type 2)</span>
+                        </button>
+                        <button class="sim-pill-btn" id="simPillNonDiabetic" onclick="switchResultProfile('non_diabetic')">
+                            <i class="fas fa-seedling"></i> <span>Non-Diabetic (Healthy)</span>
+                        </button>
+                        <button class="sim-pill-btn" id="simPillHypertensive" onclick="switchResultProfile('hypertensive')">
+                            <i class="fas fa-heart-pulse"></i> <span>Hypertension (High BP)</span>
+                        </button>
+                        <button class="sim-pill-btn" id="simPillCardio" onclick="switchResultProfile('cardio')">
+                            <i class="fas fa-heart-crack"></i> <span>Heart / Cholesterol</span>
+                        </button>
+                        <button class="sim-pill-btn" id="simPillKidney" onclick="switchResultProfile('kidney')">
+                            <i class="fas fa-kidney"></i> <span>Kidney Care</span>
+                        </button>
+                        <button class="sim-pill-btn" id="simPillMuscle" onclick="switchResultProfile('muscle_gain')">
+                            <i class="fas fa-dumbbell"></i> <span>Fitness / High Protein</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Match Score & Product Header Banner -->
+                <div class="personal-match-banner" id="personalMatchBanner">
+                    <div class="match-score-radial" id="matchScoreBadge">
+                        <svg class="radial-svg" viewBox="0 0 100 100">
+                            <circle class="radial-bg" cx="50" cy="50" r="42"></circle>
+                            <circle class="radial-progress" id="matchRadialProgress" cx="50" cy="50" r="42"></circle>
+                        </svg>
+                        <div class="radial-text">
+                            <span class="match-number" id="matchScoreNumber">--%</span>
+                            <span class="match-caption">Match</span>
+                        </div>
+                    </div>
+                    <div class="match-info">
+                        <div class="brand-tag" id="resultBrand">Brand</div>
+                        <h2 id="resultProductName">Product Name</h2>
+                        <p class="match-summary-text" id="matchSummaryText">Analyzing health profile match...</p>
+                        <div class="product-badge-row" id="productBadgeRow">
+                            <!-- Injected dynamically: NOVA Badge, Category Badge -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Diabetic vs Non-Diabetic Precision Sugar & Glycemic Contrast Card -->
+                <div class="glycemic-contrast-card" id="glycemicContrastCard">
+                    <div class="contrast-card-header">
+                        <div class="contrast-icon"><i class="fas fa-chart-column"></i></div>
+                        <div>
+                            <h4>Diabetic vs Non-Diabetic Sugar Level &amp; Glycemic Impact</h4>
+                            <p>Demonstrates how the same sugar quantity is evaluated under strict clinical diabetic caps vs healthy non-diabetic allowances.</p>
+                        </div>
+                        <div class="insulin-spike-badge" id="insulinSpikeBadge">
+                            <span class="spike-label">Insulin Spike Risk:</span>
+                            <strong id="insulinSpikeValue">High Potential</strong>
+                        </div>
+                    </div>
+                    <div class="contrast-grid">
+                        <!-- Diabetic Profile Column -->
+                        <div class="contrast-col diabetic-col" id="diabeticImpactCol">
+                            <div class="col-head">
+                                <span class="col-badge"><i class="fas fa-droplet"></i> Diabetic Profile</span>
+                                <span class="col-cap-pill">Strict 15g Daily Cap</span>
+                            </div>
+                            <div class="contrast-meter-container">
+                                <div class="contrast-meter-row">
+                                    <span>Sugar Level per 100g:</span>
+                                    <strong id="diabeticSugarGram">12.0g</strong>
+                                </div>
+                                <div class="progress-bar-wrap">
+                                    <div class="progress-bar-fill bg-danger" id="diabeticCapProgress" style="width: 80%;"></div>
+                                </div>
+                                <div class="meter-caption" id="diabeticCapPercentText">Consumes <strong>80%</strong> of 15g strict daily limit</div>
+                            </div>
+                            <div class="contrast-verdict-box danger" id="diabeticVerdictBox">
+                                <i class="fas fa-triangle-exclamation"></i>
+                                <span id="diabeticVerdictText">CRITICAL GLYCEMIC RISK: High postprandial glucose spike hazard.</span>
+                            </div>
+                        </div>
+
+                        <!-- Non-Diabetic Profile Column -->
+                        <div class="contrast-col nondiabetic-col" id="nonDiabeticImpactCol">
+                            <div class="col-head">
+                                <span class="col-badge"><i class="fas fa-seedling"></i> Non-Diabetic Profile</span>
+                                <span class="col-cap-pill">Standard 50g Allowance</span>
+                            </div>
+                            <div class="contrast-meter-container">
+                                <div class="contrast-meter-row">
+                                    <span>Sugar Level per 100g:</span>
+                                    <strong id="nonDiabeticSugarGram">12.0g</strong>
+                                </div>
+                                <div class="progress-bar-wrap">
+                                    <div class="progress-bar-fill bg-success" id="nonDiabeticCapProgress" style="width: 24%;"></div>
+                                </div>
+                                <div class="meter-caption" id="nonDiabeticCapPercentText">Consumes only <strong>24%</strong> of standard daily allowance</div>
+                            </div>
+                            <div class="contrast-verdict-box safe" id="nonDiabeticVerdictBox">
+                                <i class="fas fa-circle-check"></i>
+                                <span id="nonDiabeticVerdictText">SAFE METABOLIC TOLERANCE: Safe for healthy adult metabolic processing.</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="fast-carbs-container" id="fastCarbsContainer" style="display:none;">
+                        <span class="fast-carbs-title"><i class="fas fa-bolt"></i> Rapid-Absorption High-GI Additives Detected:</span>
+                        <div class="fast-carbs-chips" id="fastCarbsChips"></div>
+                    </div>
+                </div>
+
+                <!-- Primary Clinical Verdict Card -->
+                <div class="verdict-card" id="verdictCard">
+                    <div class="verdict-icon" id="verdictIcon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="verdict-content">
+                        <div class="verdict-text" id="verdictText">SAFE &amp; RECOMMENDED</div>
+                        <div class="verdict-sub" id="verdictSub">You can consume this product according to your profile.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Highlights Row -->
+                <div class="quick-info-grid">
+                    <div class="info-pill-card">
+                        <div class="pill-icon"><i class="fas fa-calendar-check"></i></div>
+                        <div>
+                            <span class="pill-label">Recommended Frequency</span>
+                            <strong id="frequencyText">Fits daily diet</strong>
+                        </div>
+                    </div>
+                    <div class="info-pill-card">
+                        <div class="pill-icon"><i class="fas fa-shield-halved"></i></div>
+                        <div>
+                            <span class="pill-label">Clinical Health Verdict</span>
+                            <strong id="reasonText">Safe for active health conditions</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Critical Allergen & Hazard Callout -->
+                <div class="allergen-alert-card" id="allergenAlertCard" style="display:none;"></div>
+
+                <!-- NOVA Food Classification Deep-Dive Card -->
+                <div class="nova-card" id="novaCard">
+                    <div class="nova-header">
+                        <div class="nova-badge" id="novaBadge">NOVA --</div>
+                        <div class="nova-title-area">
+                            <h4 id="novaTitle">NOVA Classification</h4>
+                            <p id="novaSubtitle">Assessing industrial food processing grade</p>
+                        </div>
+                    </div>
+                    <p class="nova-description" id="novaDescription"></p>
+                    <div class="nova-markers-box" id="novaMarkersBox" style="display:none;">
+                        <span class="markers-title"><i class="fas fa-flask"></i> Industrial Additives &amp; Markers
+                            Detected:</span>
+                        <div class="markers-chips" id="novaMarkersChips"></div>
+                    </div>
+                </div>
+
+                <!-- Smart Healthier Alternatives ("Swap & Upgrade") -->
+                <div class="smart-alternatives-card" id="smartAlternativesCard" style="display:none;">
+                    <div class="alternatives-header">
+                        <div class="alt-title-icon"><i class="fas fa-shuffle"></i></div>
+                        <div>
+                            <h4>Smart "Swap &amp; Upgrade" Recommendations</h4>
+                            <p>Cleaner, nutrient-dense alternatives tailored to your health goals and dietary
+                                restrictions.</p>
+                        </div>
+                    </div>
+                    <div class="alternatives-grid" id="alternativesGrid">
+                        <!-- Dynamically populated alternatives -->
+                    </div>
+                </div>
+
+                <!-- Ask NutriBot AI in Context -->
+                <div class="ask-nutribot-banner">
+                    <div class="nutribot-banner-icon"><i class="fas fa-robot"></i></div>
+                    <div class="nutribot-banner-text">
+                        <h4>Have questions about this food?</h4>
+                        <p>Ask our AI Clinical Nutritionist regarding blood sugar spikes, late night snacking, or
+                            ingredients.</p>
+                    </div>
+                    <button class="btn-primary btn-sm" onclick="openNutriBotWithProduct()">
+                        <i class="fas fa-comments"></i> Ask NutriBot AI
+                    </button>
+                </div>
+
+                <!-- Daily Budget Impact Section -->
+                <div class="budget-impact-section" id="budgetImpactSection">
+                    <div class="budget-header">
+                        <div>
+                            <h4><i class="fas fa-chart-pie"></i> Daily Budget Impact (per 100g)</h4>
+                            <span class="budget-note">Percentage of your personal daily recommended allowance
+                                utilized</span>
+                        </div>
+                    </div>
+                    <div class="budget-bars-grid" id="budgetBarsGrid">
+                        <!-- Injected dynamically -->
+                    </div>
+                </div>
+
+                <!-- Side-by-Side Multi-Profile Clinical Comparison Matrix Card -->
+                <div class="multi-profile-matrix-card" id="multiProfileMatrixCard">
+                    <div class="matrix-card-header">
+                        <i class="fas fa-users-viewfinder"></i>
+                        <div>
+                            <h4>Multi-Profile Clinical Compatibility Matrix</h4>
+                            <p>Side-by-side analysis demonstrating how this same food product impacts different medical conditions and clinical profiles.</p>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="profile-matrix-table" id="profileMatrixTable">
+                            <thead>
+                                <tr>
+                                    <th>Health Condition Profile</th>
+                                    <th>Safety Verdict</th>
+                                    <th>Match Score</th>
+                                    <th>Sugar Level &amp; Daily Cap %</th>
+                                    <th>Sodium Cap %</th>
+                                    <th>Clinical Action &amp; Health Risk</th>
+                                </tr>
+                            </thead>
+                            <tbody id="profileMatrixBody">
+                                <!-- Injected dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Detailed Analysis Tabs -->
+                <div class="detail-section">
+                    <div class="detail-tabs">
+                        <button class="detail-tab active" onclick="switchDetailTab('ingredients')"><i
+                                class="fas fa-flask"></i> Ingredients</button>
+                        <button class="detail-tab" onclick="switchDetailTab('quantity')"><i
+                                class="fas fa-balance-scale"></i> Quantity</button>
+                        <button class="detail-tab" onclick="switchDetailTab('quality')"><i class="fas fa-award"></i>
+                            Quality</button>
+                        <button class="detail-tab" onclick="switchDetailTab('hazards')"><i
+                                class="fas fa-triangle-exclamation"></i> Clinical Flags</button>
+                    </div>
+
+                    <!-- Tab: Ingredients -->
+                    <div class="detail-panel active" id="ingredientsTab">
+                        <div class="panel-header-row">
+                            <h4><i class="fas fa-flask"></i> Ingredient Safety &amp; Additives Breakdown</h4>
+                        </div>
+                        <div class="ingredients-list" id="ingredientsList"></div>
+                    </div>
+
+                    <!-- Tab: Quantity Breakdown -->
+                    <div class="detail-panel" id="quantityTab" style="display:none;">
+                        <div class="panel-header-row">
+                            <h4><i class="fas fa-balance-scale"></i> Macronutrient &amp; Energy Profile</h4>
+                        </div>
+                        <div class="quantity-grid" id="quantityGrid"></div>
+                    </div>
+
+                    <!-- Tab: Quality Assessment -->
+                    <div class="detail-panel" id="qualityTab" style="display:none;">
+                        <div class="panel-header-row">
+                            <h4><i class="fas fa-award"></i> Nutritional Integrity Score</h4>
+                        </div>
+                        <div class="quality-score-container" id="qualityScore"></div>
+                        <div class="quality-details" id="qualityDetails"></div>
+                    </div>
+
+                    <!-- Tab: Clinical Hazards -->
+                    <div class="detail-panel" id="hazardsTab" style="display:none;">
+                        <div class="panel-header-row">
+                            <h4><i class="fas fa-triangle-exclamation"></i> Chronic Conditions &amp; Disease Hazards
+                            </h4>
+                        </div>
+                        <div class="hazards-list" id="hazardsList"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. HEALTHCARE TRENDS & POPULATION INNOVATION -->
+        <section id="trends" class="section">
+            <div class="trends-container">
+                <div class="section-heading-center">
+                    <span class="sub-tag"><i class="fas fa-chart-line"></i> Global Health Intelligence</span>
+                    <h2>Healthcare Trends &amp; Population Shifts (2026)</h2>
+                    <p>Cutting-edge technological innovations addressing rising global chronic diseases, aging
+                        demographics, and ultra-processed food challenges.</p>
+                </div>
+
+                <!-- Macro Trends Cards -->
+                <div class="macro-trends-grid" id="macroTrendsGrid">
+                    <!-- Populated dynamically via /api/trends/insights -->
+                </div>
+
+                <!-- Population Disease Prevalence Matrix -->
+                <div class="disease-matrix-card">
+                    <div class="matrix-header">
+                        <i class="fas fa-heart-pulse"></i>
+                        <div>
+                            <h3>Population Health Risk &amp; Dietary Protocol Matrix</h3>
+                            <p>How NutriScan AI's clinical engine actively protects vulnerable demographics from dietary
+                                complications.</p>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="trends-table" id="diseaseTrendsTable">
+                            <thead>
+                                <tr>
+                                    <th>Condition</th>
+                                    <th>Global Prevalence</th>
+                                    <th>Trend</th>
+                                    <th>Key Dietary Risk Factor</th>
+                                    <th>NutriScan AI Clinical Protocol</th>
+                                </tr>
+                            </thead>
+                            <tbody id="diseaseTrendsBody">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4.5. ADVANCED DATABASE MANAGEMENT SYSTEMS (ADBMS) STUDIO (UNITS I–VI) -->
+        <section id="adbms" class="section">
+            <div class="parallelism-container adbms-main-container">
+                <div class="section-heading-center">
+                    <span class="sub-tag"><i class="fas fa-graduation-cap"></i> Complete ADBMS Syllabus Engine (Units I – VI)</span>
+                    <h2>🏛️ Advanced Database Systems (ADBMS) Interactive Studio</h2>
+                    <p>Production-grade academic and engineering implementation powering NutriScan AI across all 6 ADBMS syllabus units: <strong>Relational Constraints &amp; Anomalies</strong>, <strong>Parallel Query Execution &amp; Hash-Join</strong>, <strong>Distributed DBMS &amp; 2-Phase Commit (2PC)</strong>, <strong>NoSQL MongoDB &amp; Apache Cassandra</strong>, <strong>Data Warehousing &amp; OLAP Cubes</strong>, and <strong>Data Mining with Apriori &amp; K-Means</strong>.</p>
+                    <div style="margin-top: 1rem; display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap;">
+                        <button class="btn-secondary btn-sm" onclick="openAdbmsSyllabusModal()">
+                            <i class="fas fa-book-bookmark"></i> View Syllabus Alignment Matrix
+                        </button>
+                        <span class="badge-status-pill"><i class="fas fa-circle-check" style="color:#10b981;"></i> 6 of 6 Units Live &amp; Executable</span>
+                    </div>
+                </div>
+
+                <!-- Unit Navigation Tab Strip -->
+                <div class="adbms-unit-nav-tabs">
+                    <button class="adbms-unit-tab active" id="tabAdbmsUnit1" onclick="switchAdbmsTab('unit1')">
+                        <i class="fas fa-table-cells"></i>
+                        <span>Unit I: Relational Model</span>
+                    </button>
+                    <button class="adbms-unit-tab" id="tabAdbmsUnit2" onclick="switchAdbmsTab('unit2')">
+                        <i class="fas fa-bolt"></i>
+                        <span>Unit II: Parallel Databases</span>
+                    </button>
+                    <button class="adbms-unit-tab" id="tabAdbmsUnit3" onclick="switchAdbmsTab('unit3')">
+                        <i class="fas fa-network-wired"></i>
+                        <span>Unit III: Distributed &amp; 2PC</span>
+                    </button>
+                    <button class="adbms-unit-tab" id="tabAdbmsUnit4" onclick="switchAdbmsTab('unit4')">
+                        <i class="fas fa-leaf"></i>
+                        <span>Unit IV: NoSQL &amp; Cassandra</span>
+                    </button>
+                    <button class="adbms-unit-tab" id="tabAdbmsUnit5" onclick="switchAdbmsTab('unit5')">
+                        <i class="fas fa-cubes"></i>
+                        <span>Unit V: Data Warehouse &amp; OLAP</span>
+                    </button>
+                    <button class="adbms-unit-tab" id="tabAdbmsUnit6" onclick="switchAdbmsTab('unit6')">
+                        <i class="fas fa-brain"></i>
+                        <span>Unit VI: Data Mining &amp; KDD</span>
+                    </button>
+                </div>
+
+                <!-- ========================================================
+                     UNIT I PANE: RELATIONAL DATA MODEL: A REVIEW
+                     ======================================================== -->
+                <div class="adbms-pane active" id="adbmsPaneUnit1">
+                    <div class="pane-header-box">
+                        <div class="pane-header-left">
+                            <span class="unit-badge">UNIT-I</span>
+                            <h3>Relational Data Model, Constraints, Anomalies &amp; Normalization</h3>
+                            <p>Explores relational database schemas, domain/key/entity/referential integrity constraints, and live simulation of <strong>Insertion</strong>, <strong>Deletion</strong>, and <strong>Modification Anomalies</strong> with 3NF/BCNF normalization remedies.</p>
+                        </div>
+                    </div>
+
+                    <!-- Relational Schema Cards -->
+                    <div class="relational-schema-grid">
+                        <div class="schema-table-card">
+                            <div class="schema-table-header">
+                                <i class="fas fa-table"></i>
+                                <strong>Users Relation (3NF)</strong>
+                                <span class="badge-pk">PK: user_id</span>
+                            </div>
+                            <ul class="schema-cols-list">
+                                <li><code>user_id</code> <span class="col-type">VARCHAR(36)</span> <span class="col-cst">PRIMARY KEY, NOT NULL</span></li>
+                                <li><code>email</code> <span class="col-type">VARCHAR(255)</span> <span class="col-cst">UNIQUE, DOMAIN(email)</span></li>
+                                <li><code>name</code> <span class="col-type">VARCHAR(100)</span> <span class="col-cst">NOT NULL</span></li>
+                                <li><code>age</code> <span class="col-type">INT</span> <span class="col-cst">CHECK (age BETWEEN 1 AND 120)</span></li>
+                                <li><code>bmi</code> <span class="col-type">DECIMAL(4,1)</span> <span class="col-cst">CHECK (bmi &gt; 0)</span></li>
+                                <li><code>chronic_condition</code> <span class="col-type">VARCHAR(50)</span> <span class="col-cst">DOMAIN(diabetic, hypertensive...)</span></li>
+                            </ul>
+                        </div>
+
+                        <div class="schema-table-card">
+                            <div class="schema-table-header">
+                                <i class="fas fa-table"></i>
+                                <strong>Products Relation (3NF)</strong>
+                                <span class="badge-pk">PK: barcode</span>
+                            </div>
+                            <ul class="schema-cols-list">
+                                <li><code>barcode</code> <span class="col-type">VARCHAR(14)</span> <span class="col-cst">PRIMARY KEY, NOT NULL</span></li>
+                                <li><code>name</code> <span class="col-type">VARCHAR(255)</span> <span class="col-cst">NOT NULL</span></li>
+                                <li><code>brand</code> <span class="col-type">VARCHAR(100)</span> <span class="col-cst">NOT NULL</span></li>
+                                <li><code>category</code> <span class="col-type">VARCHAR(50)</span> <span class="col-cst">NOT NULL</span></li>
+                                <li><code>sugar_g</code> <span class="col-type">DECIMAL(5,2)</span> <span class="col-cst">CHECK (sugar_g &gt;= 0)</span></li>
+                                <li><code>sodium_mg</code> <span class="col-type">INT</span> <span class="col-cst">CHECK (sodium_mg &gt;= 0)</span></li>
+                                <li><code>calories_kcal</code> <span class="col-type">INT</span> <span class="col-cst">CHECK (calories_kcal &gt;= 0)</span></li>
+                            </ul>
+                        </div>
+
+                        <div class="schema-table-card">
+                            <div class="schema-table-header">
+                                <i class="fas fa-table"></i>
+                                <strong>MealLogs Relation (3NF)</strong>
+                                <span class="badge-pk">PK: log_id</span>
+                            </div>
+                            <ul class="schema-cols-list">
+                                <li><code>log_id</code> <span class="col-type">VARCHAR(36)</span> <span class="col-cst">PRIMARY KEY, NOT NULL</span></li>
+                                <li><code>user_id</code> <span class="col-type">VARCHAR(36)</span> <span class="col-cst">FK ➔ Users(user_id) [ON DELETE CASCADE]</span></li>
+                                <li><code>product_barcode</code> <span class="col-type">VARCHAR(14)</span> <span class="col-cst">FK ➔ Products(barcode) [ON DELETE RESTRICT]</span></li>
+                                <li><code>logged_at</code> <span class="col-type">TIMESTAMP</span> <span class="col-cst">NOT NULL DEFAULT NOW()</span></li>
+                                <li><code>servings</code> <span class="col-type">DECIMAL(3,1)</span> <span class="col-cst">CHECK (servings &gt; 0)</span></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Constraints & Anomalies Trigger Box -->
+                    <div class="anomaly-lab-box">
+                        <div class="anomaly-lab-header">
+                            <i class="fas fa-flask-vial"></i>
+                            <div>
+                                <h4>Interactive Constraint Violation &amp; Anomaly Simulator</h4>
+                                <p>Click any test case to execute the operation against the relational constraint engine and inspect the database error, safety impact, and normalization remedy.</p>
+                            </div>
+                        </div>
+
+                        <div class="anomaly-buttons-grid">
+                            <button class="btn-anomaly-test" onclick="runRelationalTest('domain_violation')">
+                                <i class="fas fa-ban"></i>
+                                <div>
+                                    <strong>Domain Constraint Violation</strong>
+                                    <span>Negative sugar value &amp; out-of-range age</span>
+                                </div>
+                            </button>
+                            <button class="btn-anomaly-test" onclick="runRelationalTest('entity_integrity_violation')">
+                                <i class="fas fa-key"></i>
+                                <div>
+                                    <strong>Entity Integrity Violation</strong>
+                                    <span>Duplicate Primary Key &amp; NULL user_id</span>
+                                </div>
+                            </button>
+                            <button class="btn-anomaly-test" onclick="runRelationalTest('referential_integrity_violation')">
+                                <i class="fas fa-link-slash"></i>
+                                <div>
+                                    <strong>Referential Integrity Violation</strong>
+                                    <span>Orphaned Foreign Key parent record not found</span>
+                                </div>
+                            </button>
+                            <button class="btn-anomaly-test" onclick="runRelationalTest('insertion_anomaly')">
+                                <i class="fas fa-triangle-exclamation"></i>
+                                <div>
+                                    <strong>Insertion Anomaly (Denormalized)</strong>
+                                    <span>Cannot insert new product without dummy patient</span>
+                                </div>
+                            </button>
+                            <button class="btn-anomaly-test" onclick="runRelationalTest('deletion_anomaly')">
+                                <i class="fas fa-trash-can"></i>
+                                <div>
+                                    <strong>Deletion Anomaly (Side-Effect Loss)</strong>
+                                    <span>Deleting patient wipes product toxicology catalog</span>
+                                </div>
+                            </button>
+                            <button class="btn-anomaly-test" onclick="runRelationalTest('modification_anomaly')">
+                                <i class="fas fa-clone"></i>
+                                <div>
+                                    <strong>Modification Anomaly (Inconsistency)</strong>
+                                    <span>Redundant updates lead to contradicting records</span>
+                                </div>
+                            </button>
+                        </div>
+
+                        <!-- Live Anomaly Output Console -->
+                        <div class="anomaly-console" id="anomalyConsole">
+                            <div class="console-placeholder">
+                                <i class="fas fa-terminal"></i> Click any test case above to trigger real-time constraint validation and SQL execution telemetry.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========================================================
+                     UNIT II PANE: PARALLEL DATABASES
+                     ======================================================== -->
+                <div class="adbms-pane" id="adbmsPaneUnit2">
+                    <div class="pane-header-box">
+                        <div class="pane-header-left">
+                            <span class="unit-badge">UNIT-II</span>
+                            <h3>Parallel Databases: Architectures, Evaluation &amp; Query Optimization</h3>
+                            <p>Examines <strong>Shared Memory</strong>, <strong>Shared Disk</strong>, <strong>Shared Nothing</strong>, and <strong>Hierarchical</strong> architectures with real-time <strong>Intra-Query Map-Reduce</strong>, <strong>Inter-Query Multi-User Concurrency</strong>, and <strong>Parallel Hash-Join</strong> benchmarks.</p>
+                        </div>
+                    </div>
+
+                    <!-- Workload Selector Grid -->
+                    <div class="workload-selector-grid">
+                        <div class="workload-card active" id="workloadCardIntra" onclick="selectBenchmarkWorkload('intra')">
+                            <div class="workload-icon"><i class="fas fa-network-wired"></i></div>
+                            <div class="workload-info">
+                                <span class="workload-type-badge">Intra-Query Parallelism</span>
+                                <h4>Diabetic Population Glycemic Risk Scan</h4>
+                                <p>Partitions 50,000+ food records across multiple worker threads to aggregate diabetic glycemic hazards simultaneously via parallel map-reduce.</p>
+                                <div class="workload-tags">
+                                    <span><i class="fas fa-database"></i> 50,000 Records</span>
+                                    <span><i class="fas fa-server"></i> 4 Worker Partitions</span>
+                                    <span><i class="fas fa-droplet"></i> Sugar Threshold: 5.0g</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="workload-card" id="workloadCardInter" onclick="selectBenchmarkWorkload('inter')">
+                            <div class="workload-icon"><i class="fas fa-users-rays"></i></div>
+                            <div class="workload-info">
+                                <span class="workload-type-badge">Inter-Query Parallelism</span>
+                                <h4>High-Concurrency Scanner Pool</h4>
+                                <p>Simulates 100 simultaneous user barcode lookups and personalized clinical profile matches executed over a concurrent connection pool vs serial FIFO queue.</p>
+                                <div class="workload-tags">
+                                    <span><i class="fas fa-layer-group"></i> 100 User Queries</span>
+                                    <span><i class="fas fa-bolt"></i> 32-Channel Pool</span>
+                                    <span><i class="fas fa-clock"></i> Non-blocking I/O</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="workload-card" id="workloadCardMega" onclick="selectBenchmarkWorkload('mega')">
+                            <div class="workload-icon"><i class="fas fa-microchip"></i></div>
+                            <div class="workload-info">
+                                <span class="workload-type-badge">Mega Big Data Audit</span>
+                                <h4>100,000 Record Multi-Core Scan</h4>
+                                <p>Heavy clinical safety evaluation (sugar, sodium, saturated fat, additives, ultra-processed markers) partitioned across 8 to 16 parallel worker threads.</p>
+                                <div class="workload-tags">
+                                    <span><i class="fas fa-database"></i> 100,000 Records</span>
+                                    <span><i class="fas fa-server"></i> 8 Partitions</span>
+                                    <span><i class="fas fa-gauge-high"></i> High-Throughput</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Custom Parameters Control Box -->
+                    <div class="benchmark-control-panel">
+                        <div class="control-panel-header">
+                            <div class="panel-title-area">
+                                <i class="fas fa-sliders"></i>
+                                <div>
+                                    <h4>Benchmark Parameters &amp; Workload Tuner</h4>
+                                    <p>Adjust dataset sizes, parallel worker threads, and connection pool channels to test scaling efficiency.</p>
+                                </div>
+                            </div>
+                            <button class="btn-toggle-config" onclick="toggleCustomParams()">
+                                <i class="fas fa-gear"></i> <span id="toggleParamsBtnText">Custom Parameters</span>
+                            </button>
+                        </div>
+
+                        <div class="custom-params-grid" id="customParamsGrid" style="display:none;">
+                            <div class="param-group">
+                                <label for="benchDatasetSize"><i class="fas fa-database"></i> Dataset Size (Records):</label>
+                                <select id="benchDatasetSize" onchange="updateBenchmarkConfig()">
+                                    <option value="10000">10,000 Food Products</option>
+                                    <option value="25000">25,000 Food Products</option>
+                                    <option value="50000" selected>50,000 Food Products</option>
+                                    <option value="100000">100,000 Food Products (Mega)</option>
+                                </select>
+                            </div>
+
+                            <div class="param-group">
+                                <label for="benchPartitions"><i class="fas fa-server"></i> Worker Threads / Partitions:</label>
+                                <select id="benchPartitions" onchange="updateBenchmarkConfig()">
+                                    <option value="1">1 Worker (Sequential Equivalent)</option>
+                                    <option value="2">2 Worker Partitions</option>
+                                    <option value="4" selected>4 Worker Partitions</option>
+                                    <option value="8">8 Worker Partitions</option>
+                                    <option value="16">16 Worker Partitions</option>
+                                </select>
+                            </div>
+
+                            <div class="param-group">
+                                <label for="benchConcurrency"><i class="fas fa-users-rays"></i> Inter-Query Concurrency Channels:</label>
+                                <select id="benchConcurrency" onchange="updateBenchmarkConfig()">
+                                    <option value="8">8 Simultaneous Connections</option>
+                                    <option value="16">16 Simultaneous Connections</option>
+                                    <option value="32" selected>32 Simultaneous Connections</option>
+                                    <option value="64">64 Simultaneous Connections</option>
+                                </select>
+                            </div>
+
+                            <div class="param-group">
+                                <label for="benchSugarThreshold"><i class="fas fa-droplet"></i> Diabetic Sugar Hazard Threshold:</label>
+                                <select id="benchSugarThreshold" onchange="updateBenchmarkConfig()">
+                                    <option value="2.5">2.5g / 100g (Strict Diabetic Cap)</option>
+                                    <option value="5.0" selected>5.0g / 100g (Standard Diabetic Cap)</option>
+                                    <option value="10.0">10.0g / 100g (Moderate Limit)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Benchmark Trigger Action -->
+                        <div class="benchmark-action-row">
+                            <button class="btn-primary btn-run-benchmark" id="btnRunBenchmark" onclick="runSelectedBenchmark()">
+                                <i class="fas fa-play"></i> <span id="btnRunBenchmarkText">Run Parallel vs Sequential Benchmark</span>
+                            </button>
+                            <span class="benchmark-status-badge" id="benchmarkStatusBadge"><i class="fas fa-circle-check"></i> Ready to benchmark</span>
+                        </div>
+                    </div>
+
+                    <!-- Execution Time & Speedup Dashboard Metrics -->
+                    <div class="benchmark-metrics-dashboard" id="benchmarkMetricsDashboard">
+                        <div class="metric-glass-card metric-sequential">
+                            <div class="metric-card-top">
+                                <span class="card-tag"><i class="fas fa-hourglass-start"></i> Sequential Database Execution</span>
+                                <span class="mode-pill" id="seqModePill">Single-Threaded FIFO</span>
+                            </div>
+                            <div class="metric-hero-val" id="seqExecTime">26.46 ms</div>
+                            <div class="metric-footer-row">
+                                <span class="foot-label">Throughput:</span>
+                                <strong id="seqThroughput">1,889,645 rec/sec</strong>
+                            </div>
+                        </div>
+
+                        <div class="metric-glass-card metric-parallel">
+                            <div class="metric-card-top">
+                                <span class="card-tag"><i class="fas fa-bolt"></i> Parallel Database Execution</span>
+                                <span class="mode-pill" id="parModePill">4-Partition Map-Reduce</span>
+                            </div>
+                            <div class="metric-hero-val" id="parExecTime">7.70 ms</div>
+                            <div class="metric-footer-row">
+                                <span class="foot-label">Throughput:</span>
+                                <strong id="parThroughput">6,493,506 rec/sec</strong>
+                            </div>
+                        </div>
+
+                        <div class="metric-glass-card metric-speedup">
+                            <div class="metric-card-top">
+                                <span class="card-tag"><i class="fas fa-gauge-high"></i> Speedup Multiplier</span>
+                                <span class="mode-pill" id="speedupEfficiency">86.0% Efficiency</span>
+                            </div>
+                            <div class="metric-hero-val" id="speedupMultiplier">3.44x</div>
+                            <div class="metric-footer-row">
+                                <span class="foot-label">Latency Reduction:</span>
+                                <strong id="latencyReduction">-70.9% Time Saved</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gantt Chart Execution Timeline -->
+                    <div class="gantt-chart-card" id="ganttChartCard">
+                        <div class="gantt-header">
+                            <div class="gantt-title-area">
+                                <i class="fas fa-chart-gantt"></i>
+                                <div>
+                                    <h4>Worker Thread &amp; Partition Execution Timeline (Gantt Visualizer)</h4>
+                                    <p>Shows real-time timeline offsets and concurrent execution spans across all active CPU worker partitions.</p>
+                                </div>
+                            </div>
+                            <span class="time-scale-badge" id="ganttTimeScaleBadge"><i class="fas fa-stopwatch"></i> Execution Time: 7.70 ms</span>
+                        </div>
+
+                        <div class="timeline-comparison-wrap">
+                            <div class="timeline-row sequential-track">
+                                <div class="track-label">
+                                    <strong>Sequential Baseline</strong>
+                                    <span>Single-Threaded Scan</span>
+                                </div>
+                                <div class="track-bar-container">
+                                    <div class="track-bar seq-bar" id="ganttSeqBar" style="width: 100%;">
+                                        <span class="bar-text">Full Table Scan: 26.46 ms</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="timeline-divider">
+                                <span><i class="fas fa-arrows-split-up-and-left"></i> Partitioned Worker Threads Executing Concurrently</span>
+                            </div>
+
+                            <div class="partition-tracks-list" id="partitionTracksList">
+                                <!-- Populated dynamically via JS -->
+                            </div>
+
+                            <div class="timeline-row merge-track" id="mergeTrackRow">
+                                <div class="track-label">
+                                    <strong>Map-Reduce Reducer</strong>
+                                    <span>Merge &amp; Aggregate</span>
+                                </div>
+                                <div class="track-bar-container">
+                                    <div class="track-bar merge-bar" id="ganttMergeBar" style="width: 15%; margin-left: 85%;">
+                                        <span class="bar-text">Merge: 0.18 ms</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Parallel Hash-Join vs Serial Nested Loop Section -->
+                    <div class="hashjoin-card-box">
+                        <div class="hashjoin-header">
+                            <i class="fas fa-code-merge"></i>
+                            <div>
+                                <h4>Parallelizing Individual Operations: Parallel Hash-Join</h4>
+                                <p>Evaluates <code>Products ⨝ MealLogs</code> on barcode. Compares traditional Serial Nested-Loop $O(M \times N)$ vs Parallel Hash-Join $O((M+N)/P)$.</p>
+                            </div>
+                            <button class="btn-primary btn-sm" onclick="runParallelHashJoin()">
+                                <i class="fas fa-bolt"></i> Run Hash-Join Benchmark
+                            </button>
+                        </div>
+
+                        <div class="hashjoin-metrics-row" id="hashJoinMetricsRow">
+                            <div class="hj-metric">
+                                <span>Serial Nested-Loop:</span>
+                                <strong id="hjNestedTime">325.0 ms</strong>
+                            </div>
+                            <div class="hj-metric">
+                                <span>Serial Hash-Join:</span>
+                                <strong id="hjSerialHashTime">35.2 ms</strong>
+                            </div>
+                            <div class="hj-metric success">
+                                <span>Parallel Hash-Join:</span>
+                                <strong id="hjParallelHashTime">9.8 ms</strong>
+                            </div>
+                            <div class="hj-metric highlight">
+                                <span>Total Speedup:</span>
+                                <strong id="hjSpeedup">33.2x Faster</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Architecture Deep-Dive Cards -->
+                    <div class="architecture-deepdive-grid">
+                        <div class="arch-card">
+                            <div class="arch-card-icon"><i class="fas fa-microchip"></i></div>
+                            <h4>Shared Memory (SMP)</h4>
+                            <p>All CPUs share main RAM and disk. Fast bus communication, but limited to 32–64 cores due to memory bus saturation.</p>
+                        </div>
+                        <div class="arch-card">
+                            <div class="arch-card-icon"><i class="fas fa-hard-drive"></i></div>
+                            <h4>Shared Disk (SAN/NAS)</h4>
+                            <p>Independent CPUs have private RAM but share centralized SAN storage. Flexible scaling but storage network bandwidth bound.</p>
+                        </div>
+                        <div class="arch-card">
+                            <div class="arch-card-icon"><i class="fas fa-server"></i></div>
+                            <h4>Shared Nothing (MPP)</h4>
+                            <p>Each node owns private CPU, RAM, and Disk. Scales horizontally to thousands of nodes via high-speed interconnect.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========================================================
+                     UNIT III PANE: DISTRIBUTED DATABASES & 2PC
+                     ======================================================== -->
+                <div class="adbms-pane" id="adbmsPaneUnit3">
+                    <div class="pane-header-box">
+                        <div class="pane-header-left">
+                            <span class="unit-badge">UNIT-III</span>
+                            <h3>Distributed Databases: Fragmentation, 2-Phase Commit (2PC) &amp; Deadlocks</h3>
+                            <p>Demonstrates <strong>Horizontal &amp; Vertical Fragmentation</strong>, <strong>Distributed Semi-Join Network Reduction</strong>, <strong>Two-Phase Commit (2PC)</strong> with fault injection, and <strong>Distributed Wait-For Graph (WFG)</strong> deadlock detection.</p>
+                        </div>
+                    </div>
+
+                    <!-- 2-Phase Commit (2PC) Interactive Simulator -->
+                    <div class="twopc-simulator-card">
+                        <div class="twopc-header">
+                            <div class="twopc-title">
+                                <i class="fas fa-shield-halved"></i>
+                                <div>
+                                    <h4>Two-Phase Commit (2PC) Distributed Transaction Protocol</h4>
+                                    <p>Simulates atomic distributed writes across 3 independent health database nodes with automatic commit or rollback upon failure.</p>
+                                </div>
+                            </div>
+                            <div class="twopc-controls">
+                                <label for="twopcFailureNode">Injected Fault Condition:</label>
+                                <select id="twopcFailureNode">
+                                    <option value="none" selected>All Nodes Healthy ➔ GLOBAL_COMMIT</option>
+                                    <option value="node1">Node 1 (Patient Ledger) Offline ➔ GLOBAL_ABORT</option>
+                                    <option value="node2">Node 2 (Clinical Catalog) Timeout ➔ GLOBAL_ABORT</option>
+                                    <option value="node3">Node 3 (Audit Compliance) Crash ➔ GLOBAL_ABORT</option>
+                                </select>
+                                <button class="btn-primary btn-sm" onclick="run2PcSimulation()">
+                                    <i class="fas fa-play"></i> Execute Distributed 2PC
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 2PC Visual Flow Sequence -->
+                        <div class="twopc-flow-container" id="twopcFlowContainer">
+                            <div class="twopc-node coordinator-node">
+                                <div class="node-badge"><i class="fas fa-crown"></i> Coordinator</div>
+                                <h5>NutriScan Master Engine</h5>
+                                <span class="node-state" id="twopcCoordState">IDLE</span>
+                            </div>
+
+                            <div class="twopc-participants-row">
+                                <div class="twopc-node participant-node" id="twopcNode1">
+                                    <div class="node-badge">Participant 1</div>
+                                    <h5>Patient Health Ledger</h5>
+                                    <span class="node-state" id="twopcNode1State">READY</span>
+                                </div>
+                                <div class="twopc-node participant-node" id="twopcNode2">
+                                    <div class="node-badge">Participant 2</div>
+                                    <h5>Clinical Product Catalog</h5>
+                                    <span class="node-state" id="twopcNode2State">READY</span>
+                                </div>
+                                <div class="twopc-node participant-node" id="twopcNode3">
+                                    <div class="node-badge">Participant 3</div>
+                                    <h5>Medical Audit Compliance</h5>
+                                    <span class="node-state" id="twopcNode3State">READY</span>
+                                </div>
+                            </div>
+
+                            <div class="twopc-log-box" id="twopcLogBox">
+                                <div class="log-title"><i class="fas fa-book-journal-whills"></i> Distributed Transaction WAL (Write-Ahead Log):</div>
+                                <div class="log-lines" id="twopcLogLines">
+                                    <span>Ready to initiate distributed atomic transaction...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Distributed Fragmentation & Semi-Join Grid -->
+                    <div class="distributed-features-grid">
+                        <!-- Horizontal & Vertical Fragmentation -->
+                        <div class="dist-card">
+                            <div class="dist-card-header">
+                                <i class="fas fa-arrows-split-up-and-left"></i>
+                                <h4>Horizontal &amp; Vertical Fragmentation</h4>
+                            </div>
+                            <p>Partitions data across distributed nodes with location transparency:</p>
+                            <div class="frag-test-row">
+                                <select id="fragRegionSelect" onchange="runFragmentationTest()">
+                                    <option value="APAC">Asia-Pacific Region (Node-Tokyo-01)</option>
+                                    <option value="NA">North America Region (Node-Virginia-02)</option>
+                                    <option value="EU">European Union Region (Node-Frankfurt-03)</option>
+                                </select>
+                            </div>
+                            <div class="frag-output-box" id="fragOutputBox">
+                                <div class="frag-item"><strong>Horizontal:</strong> Routes to regional fragment by patient origin.</div>
+                                <div class="frag-item"><strong>Vertical:</strong> Splits <code>Core Catalog</code> (edge cache) and <code>Clinical Toxicology</code> (medical node).</div>
+                            </div>
+                        </div>
+
+                        <!-- Distributed Semi-Join Network Reduction -->
+                        <div class="dist-card">
+                            <div class="dist-card-header">
+                                <i class="fas fa-compress"></i>
+                                <h4>Distributed Semi-Join Network Reduction ($R \ltimes S$)</h4>
+                            </div>
+                            <p>Joins remote tables across high-latency WAN networks without shipping entire tables.</p>
+                            <div class="semijoin-comparison">
+                                <div class="sj-col traditional">
+                                    <span class="sj-label">Full Table Shipping:</span>
+                                    <strong>50.0 MB Transmitted</strong>
+                                    <span>Latency: 1,250 ms</span>
+                                </div>
+                                <div class="sj-col optimized">
+                                    <span class="sj-label">Semi-Join ($R \ltimes S$):</span>
+                                    <strong>72.0 KB Transmitted</strong>
+                                    <span>Latency: 45 ms (<strong style="color:#10b981;">99.8% Saved</strong>)</span>
+                                </div>
+                            </div>
+                            <button class="btn-secondary btn-sm btn-full" style="margin-top:0.75rem;" onclick="runSemiJoinSimulation()">
+                                <i class="fas fa-calculator"></i> Simulate Semi-Join Reduction
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========================================================
+                     UNIT IV PANE: NOSQL DATABASES & CASSANDRA
+                     ======================================================== -->
+                <div class="adbms-pane" id="adbmsPaneUnit4">
+                    <div class="pane-header-box">
+                        <div class="pane-header-left">
+                            <span class="unit-badge">UNIT-IV</span>
+                            <h3>NoSQL Databases, MongoDB Aggregation Pipelines &amp; Apache Cassandra</h3>
+                            <p>Explores <strong>CAP Theorem</strong>, <strong>ACID vs BASE</strong>, multi-stage <strong>MongoDB Aggregation Pipelines</strong> (<code>$match</code>, <code>$unwind</code>, <code>$group</code>, <code>$project</code>, <code>$sort</code>), and <strong>Apache Cassandra</strong> wide-column time-series models.</p>
+                        </div>
+                    </div>
+
+                    <!-- MongoDB Aggregation Pipeline Runner -->
+                    <div class="nosql-pipeline-card">
+                        <div class="pipeline-header">
+                            <div class="pipeline-title">
+                                <i class="fas fa-leaf" style="color:#10b981;"></i>
+                                <div>
+                                    <h4>MongoDB Aggregation Pipeline Runner</h4>
+                                    <p>Live 5-stage document aggregation pipeline scanning 5,000+ food products to identify hazardous ingredient co-occurrences.</p>
+                                </div>
+                            </div>
+                            <div class="pipeline-controls">
+                                <div class="p-control">
+                                    <label>Min Sugar Threshold:</label>
+                                    <select id="mongoMinSugar">
+                                        <option value="5">5g Sugar (Strict)</option>
+                                        <option value="10" selected>10g Sugar (Standard)</option>
+                                        <option value="18">18g Sugar (Severe)</option>
+                                    </select>
+                                </div>
+                                <button class="btn-primary btn-sm" onclick="runMongoPipeline()">
+                                    <i class="fas fa-play"></i> Execute Pipeline
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 5 Visual Stages -->
+                        <div class="pipeline-stages-flow">
+                            <div class="stage-step">
+                                <div class="step-num">$match</div>
+                                <span>Filter Sugar &ge; Min</span>
+                            </div>
+                            <div class="stage-arrow"><i class="fas fa-arrow-right"></i></div>
+                            <div class="stage-step">
+                                <div class="step-num">$unwind</div>
+                                <span>Flatten Ingredients</span>
+                            </div>
+                            <div class="stage-arrow"><i class="fas fa-arrow-right"></i></div>
+                            <div class="stage-step">
+                                <div class="step-num">$group</div>
+                                <span>Aggregate by Name</span>
+                            </div>
+                            <div class="stage-arrow"><i class="fas fa-arrow-right"></i></div>
+                            <div class="stage-step">
+                                <div class="step-num">$project</div>
+                                <span>Compute Risk Index</span>
+                            </div>
+                            <div class="stage-arrow"><i class="fas fa-arrow-right"></i></div>
+                            <div class="stage-step">
+                                <div class="step-num">$sort</div>
+                                <span>Rank Top Hazards</span>
+                            </div>
+                        </div>
+
+                        <!-- Aggregation Output Table -->
+                        <div class="pipeline-table-wrapper" id="mongoPipelineOutput">
+                            <div class="table-placeholder">
+                                <i class="fas fa-spinner fa-spin"></i> Loading default MongoDB aggregation pipeline...
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Apache Cassandra Wide-Column Store Preview -->
+                    <div class="cassandra-wide-card">
+                        <div class="cassandra-header">
+                            <i class="fas fa-database" style="color:#38bdf8;"></i>
+                            <div>
+                                <h4>Apache Cassandra Wide-Column Store (CQL &amp; SSTables)</h4>
+                                <p>High-throughput telemetry ingestion for continuous glucose monitors (CGM) and real-time barcode intake streams.</p>
+                            </div>
+                        </div>
+
+                        <div class="cql-schema-box">
+                            <div class="cql-header">
+                                <span><i class="fas fa-terminal"></i> Cassandra Query Language (CQL) Schema</span>
+                                <span class="keyspace-tag">Keyspace: nutriscan_telemetry</span>
+                            </div>
+                            <pre class="cql-code"><code>CREATE KEYSPACE nutriscan_telemetry 
+WITH replication = {'class': 'NetworkTopologyStrategy', 'dc1': 3};
+
+CREATE TABLE nutriscan_telemetry.user_glycemic_intake_stream (
+    user_id uuid,
+    scan_date date,
+    scan_timestamp timestamp,
+    barcode text,
+    product_name text,
+    sugar_grams decimal,
+    sodium_mg int,
+    hazard_flags set&lt;text&gt;,
+    PRIMARY KEY ((user_id), scan_date, scan_timestamp)
+) WITH CLUSTERING ORDER BY (scan_date ASC, scan_timestamp DESC);</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========================================================
+                     UNIT V PANE: DATA WAREHOUSING & OLAP
+                     ======================================================== -->
+                <div class="adbms-pane" id="adbmsPaneUnit5">
+                    <div class="pane-header-box">
+                        <div class="pane-header-left">
+                            <span class="unit-badge">UNIT-V</span>
+                            <h3>Data Warehousing, Star/Snowflake Schemas &amp; Multidimensional OLAP Cubes</h3>
+                            <p>Interactive 3D nutritional data cube demonstrating core OLAP operations: <strong>Slice</strong>, <strong>Dice</strong>, <strong>Roll-Up</strong>, <strong>Drill-Down</strong>, and <strong>Pivot</strong> alongside <strong>Materialized View</strong> query acceleration.</p>
+                        </div>
+                    </div>
+
+                    <!-- Interactive OLAP Cube Operations Navigator -->
+                    <div class="olap-navigator-card">
+                        <div class="olap-header">
+                            <div class="olap-title">
+                                <i class="fas fa-cubes"></i>
+                                <div>
+                                    <h4>Multidimensional OLAP Nutritional Cube Explorer</h4>
+                                    <p>Dimensions: <code>[Time: Quarters]</code> &times; <code>[Product: Categories]</code> &times; <code>[Risk: Clinical Hazard Level]</code></p>
+                                </div>
+                            </div>
+                            <div class="olap-actions-strip">
+                                <button class="btn-olap-op active" id="btnOlapSlice" onclick="triggerOlapOp('slice')">
+                                    <i class="fas fa-scissors"></i> Slice (Q3)
+                                </button>
+                                <button class="btn-olap-op" id="btnOlapDice" onclick="triggerOlapOp('dice')">
+                                    <i class="fas fa-dice-d6"></i> Dice (Snacks + Hazard)
+                                </button>
+                                <button class="btn-olap-op" id="btnOlapRollup" onclick="triggerOlapOp('rollup')">
+                                    <i class="fas fa-arrow-up-right-dots"></i> Roll-Up (Annual)
+                                </button>
+                                <button class="btn-olap-op" id="btnOlapDrilldown" onclick="triggerOlapOp('drilldown')">
+                                    <i class="fas fa-sitemap"></i> Drill-Down (Subcats)
+                                </button>
+                                <button class="btn-olap-op" id="btnOlapPivot" onclick="triggerOlapOp('pivot')">
+                                    <i class="fas fa-arrows-rotate"></i> Pivot (Rotate)
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Dynamic OLAP Result Table -->
+                        <div class="olap-table-container" id="olapTableContainer">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Star vs Snowflake Schema & Materialized View Row -->
+                    <div class="dwh-schema-row">
+                        <div class="dwh-schema-card">
+                            <div class="dwh-card-header">
+                                <i class="fas fa-star" style="color:#f59e0b;"></i>
+                                <h4>Star vs Snowflake Schema Model</h4>
+                            </div>
+                            <p><strong>Fact Table:</strong> <code>Fact_Nutritional_Scans</code> (Measures: sugar, sodium, calories, glycemic load).</p>
+                            <div class="schema-comparison-badges">
+                                <div class="sc-badge">
+                                    <strong>Star Schema:</strong> Denormalized single-hop dimensions (<code>Dim_Time</code>, <code>Dim_Product</code>, <code>Dim_User</code>, <code>Dim_Store</code>) for fastest read performance.
+                                </div>
+                                <div class="sc-badge">
+                                    <strong>Snowflake Schema:</strong> Normalized hierarchies (<code>Dim_Product ➔ Dim_Subcat ➔ Dim_Category</code>) eliminating dimensional redundancy.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="dwh-schema-card">
+                            <div class="dwh-card-header">
+                                <i class="fas fa-bolt" style="color:#10b981;"></i>
+                                <h4>Materialized Views vs Virtual Views</h4>
+                            </div>
+                            <p>Benchmark on 1,000,000 row population clinical scan aggregation:</p>
+                            <div class="mv-benchmark-row">
+                                <div class="mv-stat">
+                                    <span>Virtual SQL View:</span>
+                                    <strong>142.5 ms</strong>
+                                </div>
+                                <div class="mv-stat success">
+                                    <span>Materialized View:</span>
+                                    <strong>1.8 ms</strong>
+                                </div>
+                                <div class="mv-stat highlight">
+                                    <span>Acceleration:</span>
+                                    <strong>79.1x Faster</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========================================================
+                     UNIT VI PANE: DATA MINING & KDD PROCESS
+                     ======================================================== -->
+                <div class="adbms-pane" id="adbmsPaneUnit6">
+                    <div class="pane-header-box">
+                        <div class="pane-header-left">
+                            <span class="unit-badge">UNIT-VI</span>
+                            <h3>Data Mining, Apriori Association Rules, K-Means Clustering &amp; KDD</h3>
+                            <p>Executes the <strong>KDD 7-Step Life Cycle</strong> with live <strong>Apriori Association Rule Mining</strong> (Support, Confidence, Lift for food additives) and <strong>K-Means Unsupervised Clustering</strong> on multi-dimensional nutritional feature vectors.</p>
+                        </div>
+                    </div>
+
+                    <!-- Apriori Association Rule Miner Card -->
+                    <div class="mining-card-box">
+                        <div class="mining-header">
+                            <div class="mining-title">
+                                <i class="fas fa-network-wired" style="color:#ec4899;"></i>
+                                <div>
+                                    <h4>Apriori Association Rule Mining (Additives &amp; Sweeteners)</h4>
+                                    <p>Finds co-occurrence rules $A \Rightarrow B$ with mathematical metrics: $\text{Support} \ge s$, $\text{Confidence} \ge c$, and $\text{Lift} &gt; 1.0$.</p>
+                                </div>
+                            </div>
+                            <div class="mining-controls">
+                                <div class="m-control">
+                                    <label>Min Support: <strong id="valMinSupport">10%</strong></label>
+                                    <input type="range" id="rangeMinSupport" min="5" max="30" value="10" step="5" oninput="$('valMinSupport').textContent = this.value + '%'">
+                                </div>
+                                <div class="m-control">
+                                    <label>Min Confidence: <strong id="valMinConfidence">60%</strong></label>
+                                    <input type="range" id="rangeMinConfidence" min="40" max="90" value="60" step="10" oninput="$('valMinConfidence').textContent = this.value + '%'">
+                                </div>
+                                <button class="btn-primary btn-sm" onclick="runAprioriMining()">
+                                    <i class="fas fa-magnifying-glass-chart"></i> Mine Rules
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Discovered Rules Table -->
+                        <div class="mining-table-wrapper" id="aprioriRulesOutput">
+                            <div class="table-placeholder">
+                                <i class="fas fa-spinner fa-spin"></i> Mining frequent itemsets with Apriori...
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- K-Means Nutritional Cluster Visualizer -->
+                    <div class="kmeans-card-box">
+                        <div class="kmeans-header">
+                            <div class="kmeans-title">
+                                <i class="fas fa-chart-scatter" style="color:#a855f7;"></i>
+                                <div>
+                                    <h4>K-Means Unsupervised Clustering (Food Vectors)</h4>
+                                    <p>Clusters foods into $K$ distinct nutritional groups by 4D vectors: <code>[Sugar, Sodium, SaturatedFat, Calories]</code>.</p>
+                                </div>
+                            </div>
+                            <div class="kmeans-controls">
+                                <label>Clusters ($K$):</label>
+                                <select id="kmeansKSelect">
+                                    <option value="2">K = 2 Clusters</option>
+                                    <option value="3">K = 3 Clusters</option>
+                                    <option value="4" selected>K = 4 Clusters</option>
+                                    <option value="5">K = 5 Clusters</option>
+                                </select>
+                                <button class="btn-primary btn-sm" onclick="runKMeansClustering()">
+                                    <i class="fas fa-play"></i> Run Clustering
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 2D Canvas Scatter Plot Visualizer -->
+                        <div class="scatter-plot-wrapper">
+                            <canvas id="kmeansCanvas" width="700" height="340"></canvas>
+                            <div class="canvas-legend" id="kmeansLegend">
+                                <!-- Populated dynamically via JS -->
+                            </div>
+                        </div>
+
+                        <!-- Cluster Summary Cards -->
+                        <div class="cluster-summary-grid" id="kmeansClusterSummary">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </div>
+
+                    <!-- KDD 7-Step Process Visualizer -->
+                    <div class="kdd-stepper-box">
+                        <div class="kdd-header">
+                            <i class="fas fa-diagram-next"></i>
+                            <div>
+                                <h4>KDD (Knowledge Discovery in Databases) 7-Step Life Cycle</h4>
+                                <p>How raw barcode telemetry transforms into verified clinical dietary knowledge.</p>
+                            </div>
+                        </div>
+                        <div class="kdd-steps-grid">
+                            <div class="kdd-step-card">
+                                <span class="step-badge">1</span>
+                                <h5>Data Cleaning</h5>
+                                <p>Noise removal, negative nutrient rejection, and missing dietary fiber imputation.</p>
+                            </div>
+                            <div class="kdd-step-card">
+                                <span class="step-badge">2</span>
+                                <h5>Data Integration</h5>
+                                <p>Merging Open Food Facts, MongoDB local store, and Food-Info clinical registries.</p>
+                            </div>
+                            <div class="kdd-step-card">
+                                <span class="step-badge">3</span>
+                                <h5>Data Selection</h5>
+                                <p>Extracting target chronic markers: Sugar, Sodium, Saturated Fat, NOVA class.</p>
+                            </div>
+                            <div class="kdd-step-card">
+                                <span class="step-badge">4</span>
+                                <h5>Transformation</h5>
+                                <p>Discretization into Low/Med/High glycemic bins and min-max vector normalization.</p>
+                            </div>
+                            <div class="kdd-step-card">
+                                <span class="step-badge">5</span>
+                                <h5>Data Mining</h5>
+                                <p>Executing Apriori rule mining for additives and K-Means for dietary clusters.</p>
+                            </div>
+                            <div class="kdd-step-card">
+                                <span class="step-badge">6</span>
+                                <h5>Pattern Evaluation</h5>
+                                <p>Filtering rules with Lift &gt; 1.5 and clinical confidence &ge; 70%.</p>
+                            </div>
+                            <div class="kdd-step-card">
+                                <span class="step-badge">7</span>
+                                <h5>Knowledge Display</h5>
+                                <p>Rendering actionable patient warnings, scatter charts, and safe food swaps.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ADBMS Syllabus Mapping Modal -->
+        <div class="modal-overlay" id="adbmsSyllabusModal" style="display:none;" onclick="if(event.target===this)closeAdbmsSyllabusModal()">
+            <div class="modal-content modal-lg">
+                <div class="modal-header">
+                    <div class="modal-title-wrap">
+                        <i class="fas fa-graduation-cap"></i>
+                        <div>
+                            <h3>ADBMS Syllabus Coverage Matrix</h3>
+                            <p>Direct mapping of syllabus units to NutriScan AI production implementations.</p>
+                        </div>
+                    </div>
+                    <button class="modal-close" onclick="closeAdbmsSyllabusModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="syllabus-table-wrapper">
+                        <table class="syllabus-matrix-table">
+                            <thead>
+                                <tr>
+                                    <th>Unit</th>
+                                    <th>Syllabus Topics Covered</th>
+                                    <th>NutriScan AI Implementation &amp; Interactive Tools</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>UNIT-I</strong></td>
+                                    <td>Relational model concepts, Relational constraints, Relational database schemas, Update operations &amp; anomalies (Insertion, Deletion, Modification), Constraint violations &amp; remedies.</td>
+                                    <td><span class="badge-tech">Active</span> Relational Schema Validator, Domain/Entity/Referential checks, Live Anomaly Simulator with 3NF normalization fixes.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>UNIT-II</strong></td>
+                                    <td>Parallel Databases, Architectures (Shared Memory, Shared Disk, Shared Nothing, Hierarchical), Parallel query evaluation, Parallelizing operations (Parallel Scan, Parallel Hash-Join vs Nested-Loop), Query optimizations.</td>
+                                    <td><span class="badge-tech">Active</span> Intra-Query Map-Reduce scan, Inter-Query concurrent connection pool, Parallel Hash-Join benchmark ($O((M+N)/P)$), Gantt timeline.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>UNIT-III</strong></td>
+                                    <td>Distributed Databases, Architectures, Storing data (Horizontal &amp; Vertical Fragmentation, Replication), Distributed catalog, Distributed Semi-Join ($R \ltimes S$), Two-Phase Commit (2PC) protocol, Distributed Concurrency &amp; Deadlocks (WFG).</td>
+                                    <td><span class="badge-tech">Active</span> Regional Horizontal Routing, Vertical Attribute decomposition, 99.8% WAN Semi-Join reduction, Fault-Injected 2PC Simulator, Local/Global WFG visualizer.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>UNIT-IV</strong></td>
+                                    <td>NoSQL Databases, SQL vs NoSQL, CAP Theorem &amp; ACID vs BASE, MongoDB (Collections, Documents, Aggregation operators <code>$match</code>, <code>$unwind</code>, <code>$group</code>, <code>$project</code>, <code>$sort</code>, MapReduce), Apache Cassandra (Keyspaces, Column Families, Wide-Column, CQL).</td>
+                                    <td><span class="badge-tech">Active</span> Live 5-stage MongoDB Ingredient Aggregation Pipeline, Apache Cassandra CQL telemetry schema, Wide-Row time-series model.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>UNIT-V</strong></td>
+                                    <td>Data Warehousing, Architecture &amp; ETL, Inmon/Kimball 4 Properties, Star and Snowflake schemas, Multidimensional OLAP Cube Operations (Roll-up, Drill-down, Slice, Dice, Pivot), Decision Support Systems (DSS), Materialized Views vs Virtual Views.</td>
+                                    <td><span class="badge-tech">Active</span> Interactive 3D OLAP Cube Explorer with live operations, Clinical Star &amp; Snowflake Schema models, 79x Materialized View query benchmark.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>UNIT-VI</strong></td>
+                                    <td>Data Mining, KDD 7-Step Process, Predictive &amp; Descriptive Algorithms, Apriori Association Rule Mining (Support, Confidence, Lift), K-Means Clustering on nutritional vectors, Clinical Nutrition Applications.</td>
+                                    <td><span class="badge-tech">Active</span> Live Apriori Rule Miner with adjustable thresholds, K-Means Canvas Scatter Plot visualizer, Interactive KDD 7-step pipeline.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. HEALTH PROFILE SECTION -->
+        <section id="profile" class="section">
+            <div class="profile-container">
+                <div class="section-heading-center">
+                    <span class="sub-tag"><i class="fas fa-user-shield"></i> Precision Health Profile</span>
+                    <h2>Your Personalized Dietary Blueprint</h2>
+                    <p>NutriScan AI recalculates daily thresholds and clinical alarms based on your physical metrics and
+                        chronic conditions.</p>
+                </div>
+
+                <!-- Dynamic Health Plan Dashboard Banner -->
+                <div class="health-plan-dashboard" id="healthPlanDashboard">
+                    <div class="plan-metric-card bmi-card">
+                        <div class="metric-icon"><i class="fas fa-weight-scale"></i></div>
+                        <div class="metric-details">
+                            <span class="metric-label">BMI &amp; Category</span>
+                            <div class="metric-val-row">
+                                <strong id="dashBmiValue">--</strong>
+                                <span class="bmi-pill" id="dashBmiCategory">Set Height &amp; Weight</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="plan-metric-card">
+                        <div class="metric-icon"><i class="fas fa-fire"></i></div>
+                        <div class="metric-details">
+                            <span class="metric-label">Daily Calorie Target (TDEE)</span>
+                            <strong id="dashCalories">-- kcal</strong>
+                        </div>
+                    </div>
+
+                    <div class="plan-metric-card">
+                        <div class="metric-icon"><i class="fas fa-cube"></i></div>
+                        <div class="metric-details">
+                            <span class="metric-label">Max Sugar Allowance</span>
+                            <strong id="dashSugar">-- g / day</strong>
+                        </div>
+                    </div>
+
+                    <div class="plan-metric-card">
+                        <div class="metric-icon"><i class="fas fa-droplet"></i></div>
+                        <div class="metric-details">
+                            <span class="metric-label">Max Sodium Cap</span>
+                            <strong id="dashSodium">-- mg / day</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <form id="healthProfileForm" onsubmit="saveHealthProfile(event)">
+                    <!-- Physical Metrics & Lifestyle -->
+                    <div class="profile-card-section">
+                        <h3><i class="fas fa-ruler-combined"></i> Physical Biometrics &amp; Goal</h3>
+                        <div class="form-grid">
+                            <div class="input-group">
+                                <label for="profileName">Your Name</label>
+                                <input type="text" id="profileName" placeholder="Enter your full name">
+                            </div>
+                            <div class="input-group">
+                                <label for="profileHeight">Height (cm)</label>
+                                <input type="number" id="profileHeight" placeholder="e.g. 175" min="50" max="250"
+                                    oninput="updateDashboardPreview()">
+                            </div>
+                            <div class="input-group">
+                                <label for="profileWeight">Weight (kg)</label>
+                                <input type="number" id="profileWeight" placeholder="e.g. 70" min="20" max="300"
+                                    step="0.5" oninput="updateDashboardPreview()">
+                            </div>
+                            <div class="input-group">
+                                <label for="profileAge">Age (years)</label>
+                                <input type="number" id="profileAge" placeholder="e.g. 28" min="1" max="120"
+                                    oninput="updateDashboardPreview()">
+                            </div>
+                            <div class="input-group">
+                                <label for="profileGender">Gender</label>
+                                <select id="profileGender" onchange="updateDashboardPreview()">
+                                    <option value="">Select</option>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label for="profileActivity">Activity Level</label>
+                                <select id="profileActivity" onchange="updateDashboardPreview()">
+                                    <option value="sedentary">Sedentary (Desk job / little exercise)</option>
+                                    <option value="light">Lightly Active (1-3 days/wk)</option>
+                                    <option value="moderate" selected>Moderately Active (3-5 days/wk)</option>
+                                    <option value="very">Very Active (6-7 days/wk)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="input-group" style="margin-top: 1rem;">
+                            <label for="profileGoal"><i class="fas fa-bullseye"></i> Primary Health Goal</label>
+                            <select id="profileGoal" onchange="updateDashboardPreview()">
+                                <option value="maintenance">Healthy Weight Maintenance</option>
+                                <option value="weight_loss">Weight Loss &amp; Fat Reduction</option>
+                                <option value="muscle_gain">Muscle Building &amp; High Protein</option>
+                                <option value="diabetes_care">Diabetes &amp; Blood Sugar Control</option>
+                                <option value="heart_health">Heart Health &amp; Low Cholesterol</option>
+                                <option value="low_sodium">Blood Pressure &amp; Low Sodium</option>
+                                <option value="clean_eating">Clean Eating &amp; Whole Foods</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Chronic Health Conditions -->
+                    <div class="profile-card-section">
+                        <h3><i class="fas fa-heart-pulse"></i> Chronic Medical Conditions</h3>
+                        <p class="hint">Select all that apply for clinical hazard alerts and tailored daily nutrient
+                            caps</p>
+
+                        <div class="conditions-grid">
+                            <label class="condition-card">
+                                <input type="checkbox" id="condDiabetes" onchange="updateDashboardPreview()">
+                                <div class="condition-content">
+                                    <i class="fas fa-droplet"></i>
+                                    <span>Diabetes / Pre-diabetes</span>
+                                </div>
+                            </label>
+                            <label class="condition-card">
+                                <input type="checkbox" id="condHypertension" onchange="updateDashboardPreview()">
+                                <div class="condition-content">
+                                    <i class="fas fa-heart-pulse"></i>
+                                    <span>Hypertension (High BP)</span>
+                                </div>
+                            </label>
+                            <label class="condition-card">
+                                <input type="checkbox" id="condHeart" onchange="updateDashboardPreview()">
+                                <div class="condition-content">
+                                    <i class="fas fa-heart-crack"></i>
+                                    <span>Heart Disease</span>
+                                </div>
+                            </label>
+                            <label class="condition-card">
+                                <input type="checkbox" id="condCholesterol" onchange="updateDashboardPreview()">
+                                <div class="condition-content">
+                                    <i class="fas fa-chart-line"></i>
+                                    <span>High Cholesterol</span>
+                                </div>
+                            </label>
+                            <label class="condition-card">
+                                <input type="checkbox" id="condObesity" onchange="updateDashboardPreview()">
+                                <div class="condition-content">
+                                    <i class="fas fa-weight-scale"></i>
+                                    <span>Obesity Management</span>
+                                </div>
+                            </label>
+                            <label class="condition-card">
+                                <input type="checkbox" id="condKidney" onchange="updateDashboardPreview()">
+                                <div class="condition-content">
+                                    <i class="fas fa-kidney"></i>
+                                    <span>Kidney Disease</span>
+                                </div>
+                            </label>
+                            <label class="condition-card">
+                                <input type="checkbox" id="condFattyLiver" onchange="updateDashboardPreview()">
+                                <div class="condition-content">
+                                    <i class="fas fa-leaf"></i>
+                                    <span>Fatty Liver Disease</span>
+                                </div>
+                            </label>
+                            <label class="condition-card">
+                                <input type="checkbox" id="condGERD" onchange="updateDashboardPreview()">
+                                <div class="condition-content">
+                                    <i class="fas fa-fire-flame-curved"></i>
+                                    <span>Acid Reflux / GERD</span>
+                                </div>
+                            </label>
+                            <label class="condition-card">
+                                <input type="checkbox" id="condCeliac" onchange="updateDashboardPreview()">
+                                <div class="condition-content">
+                                    <i class="fas fa-wheat-awn-circle-exclamation"></i>
+                                    <span>Celiac (Gluten)</span>
+                                </div>
+                            </label>
+                            <label class="condition-card">
+                                <input type="checkbox" id="condLactose" onchange="updateDashboardPreview()">
+                                <div class="condition-content">
+                                    <i class="fas fa-glass-water"></i>
+                                    <span>Lactose Intolerance</span>
+                                </div>
+                            </label>
+                            <label class="condition-card">
+                                <input type="checkbox" id="condPCOD" onchange="updateDashboardPreview()">
+                                <div class="condition-content">
+                                    <i class="fas fa-venus"></i>
+                                    <span>PCOD / PCOS</span>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="custom-entity-box">
+                            <label for="profileOtherConditions" class="custom-entity-label"><i
+                                    class="fas fa-pen-to-square"></i> Other Medical Conditions (Comma separated)</label>
+                            <input type="text" id="profileOtherConditions"
+                                placeholder="e.g. Gout, Thyroid, IBS, Asthma, Migraines, Ulcer, Crohn's..."
+                                class="custom-entity-input">
+                        </div>
+                    </div>
+
+                    <!-- Food Allergies -->
+                    <div class="profile-card-section">
+                        <h3><i class="fas fa-triangle-exclamation"></i> Food Allergies &amp; Intolerances</h3>
+                        <p class="hint">NutriScan AI will immediately flag any product with matching ingredients as
+                            DANGER</p>
+                        <div class="checkbox-chips-grid">
+                            <label class="chip-checkbox"><input type="checkbox"
+                                    id="allergyPeanuts"><span>Peanuts</span></label>
+                            <label class="chip-checkbox"><input type="checkbox" id="allergyTreeNuts"><span>Tree
+                                    Nuts</span></label>
+                            <label class="chip-checkbox"><input type="checkbox" id="allergyDairy"><span>Dairy /
+                                    Milk</span></label>
+                            <label class="chip-checkbox"><input type="checkbox" id="allergyGluten"><span>Gluten /
+                                    Wheat</span></label>
+                            <label class="chip-checkbox"><input type="checkbox" id="allergySoy"><span>Soy</span></label>
+                            <label class="chip-checkbox"><input type="checkbox"
+                                    id="allergyEggs"><span>Eggs</span></label>
+                            <label class="chip-checkbox"><input type="checkbox"
+                                    id="allergyShellfish"><span>Shellfish</span></label>
+                            <label class="chip-checkbox"><input type="checkbox"
+                                    id="allergySesame"><span>Sesame</span></label>
+                        </div>
+                        <div class="custom-entity-box">
+                            <label for="profileOtherAllergies" class="custom-entity-label"><i
+                                    class="fas fa-pen-to-square"></i> Other Custom Allergies / Ingredients to
+                                Avoid</label>
+                            <input type="text" id="profileOtherAllergies"
+                                placeholder="e.g. Mustard, Sulfites, Caffeine, MSG, Palm oil, Aspartame, Corn..."
+                                class="custom-entity-input">
+                        </div>
+                    </div>
+
+                    <!-- Dietary Preferences -->
+                    <div class="profile-card-section">
+                        <h3><i class="fas fa-utensils"></i> Dietary Lifestyle</h3>
+                        <div class="preferences-grid">
+                            <label class="pref-card">
+                                <input type="radio" name="diet" value="none" checked>
+                                <span>No Restrictions</span>
+                            </label>
+                            <label class="pref-card">
+                                <input type="radio" name="diet" value="vegetarian">
+                                <span>Vegetarian</span>
+                            </label>
+                            <label class="pref-card">
+                                <input type="radio" name="diet" value="vegan">
+                                <span>Vegan</span>
+                            </label>
+                            <label class="pref-card">
+                                <input type="radio" name="diet" value="keto">
+                                <span>Keto / Low Carb</span>
+                            </label>
+                            <label class="pref-card">
+                                <input type="radio" name="diet" value="jain">
+                                <span>Jain</span>
+                            </label>
+                        </div>
+                        <div class="custom-entity-box">
+                            <label for="profileOtherDiet" class="custom-entity-label"><i
+                                    class="fas fa-pen-to-square"></i> Other Diet / Religious Guidelines</label>
+                            <input type="text" id="profileOtherDiet"
+                                placeholder="e.g. Halal, Kosher, Paleo, Low FODMAP, Pescatarian..."
+                                class="custom-entity-input">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary btn-full btn-lg" id="saveProfileBtn">
+                        <i class="fas fa-floppy-disk"></i> Save Profile &amp; Update Health Plan
+                    </button>
+                </form>
+
+                <div class="profile-saved" id="profileSaved" style="display:none;">
+                    <i class="fas fa-circle-check"></i>
+                    <h3>Health Profile Updated Successfully!</h3>
+                    <p>Your daily budget and scanner recommendations are now synchronized.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. ABOUT SECTION -->
+        <section id="about" class="section">
+            <div class="about-container">
+                <div class="section-heading-center">
+                    <span class="sub-tag"><i class="fas fa-circle-info"></i> Our Vision</span>
+                    <h2>About NutriScan AI</h2>
+                    <p>Empowering humanity with intelligent, accessible, and clinical food transparency.</p>
+                </div>
+
+                <div class="about-grid">
+                    <div class="about-card">
+                        <div class="about-card-icon"><i class="fas fa-bullseye"></i></div>
+                        <h3>The Mission</h3>
+                        <p>To reduce non-communicable lifestyle diseases (Diabetes, Hypertension, Cardiovascular
+                            mortality) by transforming complex food science labels into instant, clear, and actionable
+                            verdicts for everyone.</p>
+                    </div>
+                    <div class="about-card">
+                        <div class="about-card-icon"><i class="fas fa-brain"></i></div>
+                        <h3>Clinical AI Architecture</h3>
+                        <p>Powered by evidence-based nutrition science, the WHO and NOVA dietary processing frameworks,
+                            and advanced biometric modeling.</p>
+                    </div>
+                    <div class="about-card">
+                        <div class="about-card-icon"><i class="fas fa-users-rays"></i></div>
+                        <h3>Universal Accessibility</h3>
+                        <p>Engineered for all literacy levels and aging demographics with voice synthesizers,
+                            multi-modal OCR scanning, and plain language explanations.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- DAILY INTAKE & NUTRITION BUDGET MODAL / DRAWER -->
+    <div class="intake-modal" id="intakeModal" aria-hidden="true">
+        <div class="intake-dialog" role="dialog" aria-modal="true" aria-labelledby="intakeTitle">
+            <div class="intake-header">
+                <div>
+                    <h3 id="intakeTitle"><i class="fas fa-chart-pie"></i> Today's Nutrition Budget Tracker</h3>
+                    <p class="intake-subtitle">Cumulative intake from your scanned foods today</p>
+                </div>
+                <button class="modal-close" onclick="closeIntakeModal()">&times;</button>
+            </div>
+
+            <div class="intake-body">
+                <!-- Macro Progress Rings Grid -->
+                <div class="intake-rings-grid" id="intakeRingsGrid">
+                    <!-- Progress meters injected dynamically -->
+                </div>
+
+                <!-- Logged Items List -->
+                <div class="intake-logs-section">
+                    <div class="intake-logs-header">
+                        <h4><i class="fas fa-utensils"></i> Logged Foods Today</h4>
+                        <button class="btn-clear-logs" onclick="clearTodayMealLogs()"><i class="fas fa-trash-can"></i>
+                            Clear Today</button>
+                    </div>
+                    <div class="intake-logs-list" id="intakeLogsList">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DOCKED / FLOATING NUTRIBOT AI COPILOT -->
+    <div class="nutribot-widget" id="nutribotWidget">
+        <!-- Floating trigger bubble -->
+        <button class="nutribot-fab" id="nutribotFab" onclick="toggleNutriBot()" title="Chat with NutriBot AI"
+            aria-label="Open AI Nutritionist">
+            <i class="fas fa-robot"></i>
+            <span class="fab-pulse"></span>
+        </button>
+
+        <!-- Chat Window -->
+        <div class="nutribot-window" id="nutribotWindow" style="display:none;">
+            <div class="nutribot-header">
+                <div class="nutribot-header-info">
+                    <div class="nutribot-avatar"><i class="fas fa-robot"></i></div>
+                    <div>
+                        <h4>NutriBot AI</h4>
+                        <span class="nutribot-status"><span class="status-dot"></span> Clinical AI Nutritionist</span>
+                    </div>
+                </div>
+                <button class="nutribot-close-btn" onclick="toggleNutriBot()">&times;</button>
+            </div>
+
+            <div class="nutribot-messages" id="nutribotMessages">
+                <div class="bot-msg intro-msg">
+                    <div class="msg-bubble">
+                        👋 Hi! I am <strong>NutriBot AI</strong>, your personal clinical nutritionist. Ask me anything
+                        about your scanned food, blood sugar spikes, additives, or healthy swaps!
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Suggestions Prompt Chips -->
+            <div class="nutribot-prompt-chips" id="nutribotPromptChips">
+                <button class="prompt-chip"
+                    onclick="sendNutriBotPrompt('Will this product cause a blood sugar spike?')">🍬 Blood Sugar
+                    Spike?</button>
+                <button class="prompt-chip"
+                    onclick="sendNutriBotPrompt('Is this food safe for late-night snacking?')">🌙 Late-Night
+                    Safe?</button>
+                <button class="prompt-chip"
+                    onclick="sendNutriBotPrompt('Explain the additives and preservatives in this item.')">🔬 Explain
+                    Additives</button>
+                <button class="prompt-chip"
+                    onclick="sendNutriBotPrompt('What are healthier, whole-food swaps for this?')">🔄 Healthier
+                    Swaps</button>
+            </div>
+
+            <!-- Chat Input -->
+            <form class="nutribot-input-form" onsubmit="handleNutriBotSubmit(event)">
+                <input type="text" id="nutribotInput" placeholder="Ask about food, ingredients, or health..."
+                    autocomplete="off">
+                <button type="submit" class="btn-send-bot"><i class="fas fa-paper-plane"></i></button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Printable Nutrition Scorecard Area (Used during print) -->
+    <div id="printReportContainer" class="print-only"></div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <div class="brand-logo-glow">
+                    <i class="fas fa-leaf"></i>
+                </div>
+                <span class="brand-title">NutriScan <span class="ai-badge">AI 2.0</span></span>
+                <p class="footer-tagline">Building a healthier world through AI precision nutrition &amp; clinical
+                    transparency.</p>
+            </div>
+            <div class="footer-links-grid">
+                <div class="footer-col">
+                    <h4>Platform</h4>
+                    <a href="#home">Home</a>
+                    <a href="#scan">Scan Hub</a>
+                    <a href="#trends">Healthcare Trends</a>
+                    <a href="#profile">Health Profile</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Clinical Standards</h4>
+                    <a href="https://world.openfoodfacts.org" target="_blank" rel="noopener">Open Food Facts</a>
+                    <a href="https://www.who.int/news-room/fact-sheets/detail/healthy-diet" target="_blank"
+                        rel="noopener">WHO Guidelines</a>
+                    <a href="#trends">NOVA System</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 NutriScan AI. All rights reserved. Advanced Preventive Health Technology.</p>
+        </div>
+    </footer>
+
+    <!-- Cutting-Edge Client Libraries: Live Barcode Detection & In-Browser Tesseract Neural OCR -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+    <!-- App Scripts -->
+    <script src="js/script.js"></script>
+</body>
+
+</html>
