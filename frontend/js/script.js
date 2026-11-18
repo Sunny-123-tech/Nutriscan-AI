@@ -612,7 +612,7 @@
 
     const notice = $('profileSaved');
     if (notice) { notice.style.display = 'block'; setTimeout(() => notice.style.display = 'none', 3500); }
-    showToast(authToken ? 'Health profile saved and synced to MongoDB Atlas!' : 'Health profile saved locally! Sign in to sync to MongoDB.');
+    showToast(authToken ? 'Health profile saved and synced to database!' : 'Health profile saved locally! Sign in to sync your profile.');
   };
 
   function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
@@ -2806,6 +2806,7 @@
   let cachedDbEntries = [];
 
   window.refreshDatabaseInspector = async function () {
+    if (!$('dbEntriesTableWrapper')) return;
     const badge = $('dbStatusBadge');
     const badgeText = $('dbStatusText');
     const clusterHost = $('dbClusterHost');
