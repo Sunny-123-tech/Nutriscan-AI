@@ -122,7 +122,7 @@
                 </div>
             </div>
 
-            <form id="authForm" onsubmit="submitAuth(event)" novalidate>
+            <form id="authForm" onsubmit="handleAuthFormSubmit(event)" novalidate>
                 <!-- Step 1: Account basics -->
                 <div class="auth-step-panel active" id="authStep1">
                     <div class="input-group" id="registerNameField" style="display:none;">
@@ -1761,6 +1761,72 @@
                         </div>
                     </div>
 
+                    <!-- LIVE MONGODB DATABASE INSPECTOR & REAL-TIME COLLECTIONS EXPLORER -->
+                    <div class="db-inspector-card" id="dbInspectorCard">
+                        <div class="db-inspector-header">
+                            <div class="db-inspector-title">
+                                <i class="fas fa-server" style="color: #10b981;"></i>
+                                <div>
+                                    <h4>Live MongoDB Atlas Database Inspector</h4>
+                                    <p>Real-time bidirectional synchronization with MongoDB Atlas Cloud Cluster (<code id="dbClusterHost">nutriscancluster.aynwoda.mongodb.net / nutriscan</code>)</p>
+                                </div>
+                            </div>
+                            <div class="db-inspector-actions">
+                                <span class="db-status-badge" id="dbStatusBadge">
+                                    <span class="pulse-indicator-dot"></span> <span id="dbStatusText">Checking connection...</span>
+                                </span>
+                                <button class="btn-secondary btn-sm" onclick="refreshDatabaseInspector()" title="Fetch latest entries from MongoDB">
+                                    <i class="fas fa-rotate"></i> Refresh Entries
+                                </button>
+                                <button class="btn-primary btn-sm" onclick="openAuthModal('register')" title="Create a new user entry">
+                                    <i class="fas fa-user-plus"></i> New User
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Collection Counters & Switcher -->
+                        <div class="db-collections-pills">
+                            <button class="db-col-pill active" id="tabColUsers" onclick="switchDbCollection('users')">
+                                <i class="fas fa-users"></i>
+                                <span class="col-name">users</span>
+                                <span class="col-count" id="countColUsers">0</span>
+                            </button>
+                            <button class="db-col-pill" id="tabColProfiles" onclick="switchDbCollection('profiles')">
+                                <i class="fas fa-id-card-clip"></i>
+                                <span class="col-name">profiles</span>
+                                <span class="col-count" id="countColProfiles">0</span>
+                            </button>
+                            <button class="db-col-pill" id="tabColProducts" onclick="switchDbCollection('products')">
+                                <i class="fas fa-boxes-stacked"></i>
+                                <span class="col-name">products</span>
+                                <span class="col-count" id="countColProducts">0</span>
+                            </button>
+                            <button class="db-col-pill" id="tabColMealLogs" onclick="switchDbCollection('mealLogs')">
+                                <i class="fas fa-utensils"></i>
+                                <span class="col-name">mealLogs</span>
+                                <span class="col-count" id="countColMealLogs">0</span>
+                            </button>
+                        </div>
+
+                        <!-- Search and Filter Bar -->
+                        <div class="db-table-toolbar">
+                            <div class="db-search-box">
+                                <i class="fas fa-magnifying-glass"></i>
+                                <input type="text" id="dbSearchInput" placeholder="Filter current collection records..." oninput="filterCurrentDbEntries()">
+                            </div>
+                            <div class="db-toolbar-info">
+                                <span id="dbCollectionInfo">Showing entries from MongoDB</span>
+                            </div>
+                        </div>
+
+                        <!-- Live Documents Table -->
+                        <div class="db-entries-table-wrapper" id="dbEntriesTableWrapper">
+                            <div class="table-placeholder">
+                                <i class="fas fa-spinner fa-spin"></i> Connecting to MongoDB Atlas cluster...
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- MongoDB Aggregation Pipeline Runner -->
                     <div class="nosql-pipeline-card">
                         <div class="pipeline-header">
@@ -2147,6 +2213,19 @@ CREATE TABLE nutriscan_telemetry.user_glycemic_intake_stream (
                     <h2>Your Personalized Dietary Blueprint</h2>
                     <p>NutriScan AI recalculates daily thresholds and clinical alarms based on your physical metrics and
                         chronic conditions.</p>
+                </div>
+
+                <!-- Live Database Profile Sync Status Banner -->
+                <div class="db-sync-indicator" id="profileDbSyncIndicator">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <i class="fas fa-database" style="color:#10b981;font-size:1.1rem;"></i>
+                        <span id="profileDbSyncText">Active sync with MongoDB Atlas Cloud Cluster</span>
+                    </div>
+                    <div id="profileDbSyncAction">
+                        <button type="button" class="btn-secondary btn-sm" onclick="navigateTo('adbms'); switchAdbmsTab('unit4');">
+                            <i class="fas fa-eye"></i> View in ADBMS Studio
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Dynamic Health Plan Dashboard Banner -->

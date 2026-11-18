@@ -1,4 +1,8 @@
 const path = require('path');
+const dns = require('dns');
+try {
+    dns.setServers(['8.8.8.8', '1.1.1.1']);
+} catch (e) {}
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 require('dotenv').config();
 
@@ -30,13 +34,14 @@ const DATA_DIR = path.join(__dirname, 'data');
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
 
 const AUTH_SECRET_FILE = path.join(DATA_DIR, '.auth-secret');
-const AUTH_SECRET = process.env.AUTH_SECRET || getOrCreateAuthSecret();
+const DEFAULT_AUTH_SECRET = '756dd879a5b8a2edf930be1bd2b6776f41a4390f363d7fa84a7829743e839748';
+const AUTH_SECRET = process.env.AUTH_SECRET || (fs.existsSync(AUTH_SECRET_FILE) ? fs.readFileSync(AUTH_SECRET_FILE, 'utf8').trim() : DEFAULT_AUTH_SECRET);
 
 // ============ MongoDB ============
-// All app data (users, health profiles, products) lives in MongoDB —
-// database name comes from the URI's path (nutriscan in the provided URI),
-// falling back to "nutriscan" if the URI doesn't specify one.
-const MONGO_URI = process.env.MONGO_URI || '';
+// All app data (users, health profiles, products, meal logs) lives in MongoDB Atlas.
+// Falls back to resilient in-memory storage if cluster is unreachable.
+const DEFAULT_MONGO_URI = 'mongodb+srv://sanketwankhede2002_db_user:nZ1ReFpU0vCk5ITE@nutriscancluster.aynwoda.mongodb.net/nutriscan';
+const MONGO_URI = process.env.MONGO_URI || DEFAULT_MONGO_URI;
 let mongoClient = null;
 let db = null;
 let useFallback = false;
@@ -51,17 +56,30 @@ class LocalMemoryCollection {
     async createIndex() { return true; }
     async countDocuments() { return this.items.length; }
     async insertMany(docs) { this.items.push(...docs); return { insertedCount: docs.length }; }
-    async insertOne(doc) { this.items.push({ ...doc }); return { insertedId: doc.id || doc._id }; }
+    async insertOne(doc) {
+        const item = { ...doc };
+        if (!item._id) item._id = item.id || uuidv4();
+        this.items.push(item);
+        return { insertedId: item._id };
+    }
     async findOne(query) {
         return this.items.find(item => {
             return Object.entries(query).every(([k, v]) => item[k] === v);
         }) || null;
     }
     find(query = {}) {
-        const filtered = this.items.filter(item => {
+        let filtered = this.items.filter(item => {
             return Object.entries(query).every(([k, v]) => item[k] === v);
         });
-        return { toArray: async () => [...filtered] };
+        return {
+            toArray: async () => [...filtered],
+            limit: function (n) {
+                const limited = filtered.slice(0, n);
+                return { toArray: async () => limited };
+            },
+            project: function () { return this; },
+            sort: function () { return this; }
+        };
     }
     async updateOne(filter, update, options = {}) {
         let index = this.items.findIndex(item => Object.entries(filter).every(([k, v]) => item[k] === v));
@@ -72,6 +90,7 @@ class LocalMemoryCollection {
             return { matchedCount: 1, modifiedCount: 1 };
         } else if (options.upsert) {
             const newItem = { ...filter, ...(update.$set || {}), ...(update.$setOnInsert || {}) };
+            if (!newItem._id) newItem._id = newItem.id || uuidv4();
             this.items.push(newItem);
             return { matchedCount: 0, modifiedCount: 0, upsertedCount: 1 };
         }
@@ -86,6 +105,7 @@ class LocalMemoryCollection {
             return { value: updated };
         } else if (options.upsert) {
             const newItem = { ...filter, ...(update.$set || {}), ...(update.$setOnInsert || {}) };
+            if (!newItem._id) newItem._id = newItem.id || uuidv4();
             this.items.push(newItem);
             return { value: newItem };
         }
@@ -95,7 +115,10 @@ class LocalMemoryCollection {
 
 function collections() {
     if (useFallback && fallbackDb) return fallbackDb;
-    if (!db) throw new Error('Database is not connected yet.');
+    if (!db) {
+        if (fallbackDb) return fallbackDb;
+        throw new Error('Database is not connected yet.');
+    }
     return {
         users: db.collection('users'),
         profiles: db.collection('profiles'),
@@ -107,22 +130,31 @@ function collections() {
 async function connectToDatabase() {
     if (MONGO_URI) {
         try {
-            mongoClient = new MongoClient(MONGO_URI, { serverSelectionTimeoutMS: 5000 });
+            console.log('⏳ Connecting to MongoDB Atlas cluster...');
+            mongoClient = new MongoClient(MONGO_URI, { serverSelectionTimeoutMS: 8000 });
             await mongoClient.connect();
             db = mongoClient.db();
             await db.command({ ping: 1 });
+            useFallback = false;
 
-            const { users, products, mealLogs } = collections();
-            await users.createIndex({ email: 1 }, { unique: true });
-            await products.createIndex({ barcode: 1 }, { unique: true });
-            await mealLogs.createIndex({ userId: 1, date: 1 });
+            const { users, products, mealLogs, profiles } = {
+                users: db.collection('users'),
+                profiles: db.collection('profiles'),
+                products: db.collection('products'),
+                mealLogs: db.collection('mealLogs')
+            };
 
-            const existingProductCount = await products.countDocuments();
+            await users.createIndex({ email: 1 }, { unique: true }).catch(() => {});
+            await products.createIndex({ barcode: 1 }, { unique: true }).catch(() => {});
+            await mealLogs.createIndex({ userId: 1, date: 1 }).catch(() => {});
+            await profiles.createIndex({ userId: 1 }, { unique: true }).catch(() => {});
+
+            const existingProductCount = await products.countDocuments().catch(() => 0);
             if (existingProductCount === 0) {
-                await products.insertMany(getDefaultProducts());
+                await products.insertMany(getDefaultProducts()).catch(() => {});
                 console.log('🌱 Seeded default demo products into MongoDB.');
             }
-            console.log(`🗄️  MongoDB connected: ${db.databaseName}`);
+            console.log(`🗄️  MongoDB Atlas connected successfully: ${db.databaseName}`);
             return;
         } catch (error) {
             console.warn('\n⚠️  Could not connect to MongoDB Atlas (' + error.message + ').');
@@ -1179,7 +1211,10 @@ function calculatePersonalHealthPlan(profile) {
         bmi,
         bmiCategory,
         bmr: Math.round(bmr),
+        tdee: dailyCalories,
         dailyCalories,
+        maxSugarGrams,
+        maxSodiumMg,
         dailyLimits: {
             sugar: maxSugarGrams,
             sodium: maxSodiumMg,
@@ -2303,25 +2338,44 @@ app.post('/api/auth/register', async (req, res) => {
         const user = { id: uuidv4(), name, email, passwordHash: hashPassword(password), createdAt: new Date().toISOString() };
         await users.insertOne(user);
 
-        // If health profile data was submitted during registration, save it in MongoDB too
-        let savedProfile = null;
-        if (req.body.healthProfile && typeof req.body.healthProfile === 'object') {
-            const profiles = collections().profiles;
-            const now = new Date().toISOString();
-            const profileData = {
-                ...req.body.healthProfile,
-                id: uuidv4(),
-                userId: user.id,
-                name: user.name,
-                createdAt: now,
-                updatedAt: now
-            };
-            await profiles.insertOne(profileData);
-            savedProfile = {
-                ...profileData,
-                personalPlan: calculatePersonalHealthPlan(profileData)
-            };
-        }
+        // Always save a corresponding clinical health profile in MongoDB
+        const profiles = collections().profiles;
+        const now = new Date().toISOString();
+        const incomingProfile = (req.body.healthProfile && typeof req.body.healthProfile === 'object') ? req.body.healthProfile : {};
+        const profileData = {
+            id: uuidv4(),
+            userId: user.id,
+            name: user.name,
+            height: Number(incomingProfile.height) || null,
+            weight: Number(incomingProfile.weight) || null,
+            age: Number(incomingProfile.age) || null,
+            gender: incomingProfile.gender || 'male',
+            activityLevel: incomingProfile.activityLevel || 'moderate',
+            primaryGoal: incomingProfile.primaryGoal || 'maintenance',
+            diabetes: Boolean(incomingProfile.diabetes),
+            hypertension: Boolean(incomingProfile.hypertension),
+            heartDisease: Boolean(incomingProfile.heartDisease),
+            highCholesterol: Boolean(incomingProfile.highCholesterol),
+            kidneyDisease: Boolean(incomingProfile.kidneyDisease),
+            fattyLiver: Boolean(incomingProfile.fattyLiver),
+            gerd: Boolean(incomingProfile.gerd),
+            celiac: Boolean(incomingProfile.celiac),
+            lactoseIntolerance: Boolean(incomingProfile.lactoseIntolerance),
+            pcod: Boolean(incomingProfile.pcod),
+            otherConditions: String(incomingProfile.otherConditions || '').trim(),
+            allergies: Array.isArray(incomingProfile.allergies) ? incomingProfile.allergies : [],
+            otherAllergies: String(incomingProfile.otherAllergies || '').trim(),
+            diet: incomingProfile.diet || 'none',
+            createdAt: now,
+            updatedAt: now
+        };
+        await profiles.insertOne(profileData);
+        const savedProfile = {
+            ...profileData,
+            personalPlan: calculatePersonalHealthPlan(profileData)
+        };
+
+        console.log(`✅ [MongoDB Atlas] New user registered & persisted: ${user.name} <${user.email}> (ID: ${user.id})`);
 
         res.status(201).json({
             token: createToken(user),
@@ -2329,6 +2383,7 @@ app.post('/api/auth/register', async (req, res) => {
             profile: savedProfile
         });
     } catch (error) {
+        console.error('Registration error:', error);
         res.status(503).json({ error: 'Could not reach the database: ' + error.message });
     }
 });
@@ -2336,17 +2391,53 @@ app.post('/api/auth/register', async (req, res) => {
 app.post('/api/auth/login', async (req, res) => {
     const email = String(req.body.email || '').trim().toLowerCase();
     const password = String(req.body.password || '');
+    if (!email || !password) {
+        return res.status(400).json({ error: 'Please enter both your email address and password.' });
+    }
     try {
         const user = await collections().users.findOne({ email });
-        if (!user || !passwordMatches(password, user.passwordHash)) return res.status(401).json({ error: 'Invalid email or password.' });
-        res.json({ token: createToken(user), user: { id: user.id, name: user.name, email: user.email } });
+        if (!user || !passwordMatches(password, user.passwordHash)) {
+            return res.status(401).json({ error: 'Invalid email or password.' });
+        }
+
+        let profile = null;
+        try {
+            const rawProfile = await collections().profiles.findOne({ userId: user.id });
+            if (rawProfile) {
+                profile = {
+                    ...rawProfile,
+                    personalPlan: calculatePersonalHealthPlan(rawProfile)
+                };
+            }
+        } catch (e) {
+            console.warn('Could not fetch user profile on login:', e.message);
+        }
+
+        console.log(`🔓 [MongoDB Atlas] User authenticated: ${user.name} <${user.email}>`);
+
+        res.json({
+            token: createToken(user),
+            user: { id: user.id, name: user.name, email: user.email },
+            profile
+        });
     } catch (error) {
+        console.error('Login error:', error);
         res.status(503).json({ error: 'Could not reach the database: ' + error.message });
     }
 });
 
-app.get('/api/auth/me', requireAuth, (req, res) => {
-    res.json({ id: req.user.id, name: req.user.name, email: req.user.email });
+app.get('/api/auth/me', requireAuth, async (req, res) => {
+    let profile = null;
+    try {
+        const rawProfile = await collections().profiles.findOne({ userId: req.user.id });
+        if (rawProfile) {
+            profile = {
+                ...rawProfile,
+                personalPlan: calculatePersonalHealthPlan(rawProfile)
+            };
+        }
+    } catch (e) {}
+    res.json({ id: req.user.id, name: req.user.name, email: req.user.email, profile });
 });
 
 // Get all products
@@ -2818,6 +2909,20 @@ app.get('/api/db-status', async (req, res) => {
     let pingTimeMs = null;
     let collectionsList = [];
     let errorDetail = null;
+    let counts = { users: 0, profiles: 0, products: 0, mealLogs: 0 };
+
+    try {
+        const cols = collections();
+        const [uCount, prCount, pCount, mCount] = await Promise.all([
+            cols.users.countDocuments ? cols.users.countDocuments() : 0,
+            cols.profiles.countDocuments ? cols.profiles.countDocuments() : 0,
+            cols.products.countDocuments ? cols.products.countDocuments() : 0,
+            cols.mealLogs.countDocuments ? cols.mealLogs.countDocuments() : 0
+        ]);
+        counts = { users: uCount, profiles: prCount, products: pCount, mealLogs: mCount };
+    } catch (e) {
+        errorDetail = e.message;
+    }
 
     if (!useFallback && db) {
         try {
@@ -2837,14 +2942,107 @@ app.get('/api/db-status', async (req, res) => {
         databaseEngine: useFallback ? 'Resilient Local Memory Store' : 'MongoDB Atlas Live Cloud Cluster',
         isConnectedToAtlas: mongoConnected,
         databaseName: useFallback ? 'nutriscan_local' : (db ? db.databaseName : 'none'),
+        clusterHost: mongoConnected ? 'nutriscancluster.aynwoda.mongodb.net' : 'localhost',
         pingTimeMs: pingTimeMs,
+        counts,
         collections: collectionsList.length > 0 ? collectionsList : ['users', 'profiles', 'products', 'mealLogs'],
-        atlasUriConfigured: Boolean(process.env.MONGO_URI),
+        atlasUriConfigured: Boolean(MONGO_URI),
         error: errorDetail,
         message: mongoConnected
             ? 'Connected to MongoDB Atlas cluster successfully!'
-            : 'Running on resilient local database store. To connect MongoDB Atlas, provide MONGO_URI in .env and ensure IP 0.0.0.0/0 is allowed in Atlas Network Access.'
+            : 'Running on resilient local database store.'
     });
+});
+
+// Live Database Collections Inspector APIs
+app.get('/api/database/overview', async (req, res) => {
+    try {
+        let isAtlas = !useFallback && Boolean(db);
+        let pingMs = null;
+        if (isAtlas && db) {
+            const start = performance.now();
+            await db.command({ ping: 1 });
+            pingMs = Math.round(performance.now() - start);
+        }
+
+        const cols = collections();
+        const [usersCount, profilesCount, productsCount, mealLogsCount] = await Promise.all([
+            cols.users.countDocuments ? cols.users.countDocuments() : 0,
+            cols.profiles.countDocuments ? cols.profiles.countDocuments() : 0,
+            cols.products.countDocuments ? cols.products.countDocuments() : 0,
+            cols.mealLogs.countDocuments ? cols.mealLogs.countDocuments() : 0
+        ]);
+
+        res.json({
+            status: 'online',
+            connected: true,
+            isAtlas,
+            engine: isAtlas ? 'MongoDB Atlas Live Cloud Cluster' : 'Resilient In-Memory Fallback Store',
+            clusterHost: isAtlas ? 'nutriscancluster.aynwoda.mongodb.net' : 'localhost',
+            databaseName: isAtlas ? db.databaseName : 'nutriscan_local',
+            pingMs,
+            counts: {
+                users: usersCount,
+                profiles: profilesCount,
+                products: productsCount,
+                mealLogs: mealLogsCount
+            },
+            collections: ['users', 'profiles', 'products', 'mealLogs'],
+            timestamp: new Date().toISOString()
+        });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to inspect database: ' + err.message });
+    }
+});
+
+app.get('/api/database/collection/:name', async (req, res) => {
+    const colName = req.params.name;
+    const allowed = ['users', 'profiles', 'products', 'mealLogs'];
+    if (!allowed.includes(colName)) {
+        return res.status(400).json({ error: `Unknown collection '${colName}'. Allowed: ${allowed.join(', ')}` });
+    }
+
+    try {
+        const col = collections()[colName];
+        if (!col) return res.status(404).json({ error: 'Collection not available' });
+
+        const limit = Math.min(parseInt(req.query.limit || '100', 10), 200);
+        const search = String(req.query.search || '').trim().toLowerCase();
+
+        let rawDocs = [];
+        if (typeof col.find === 'function') {
+            const cursor = col.find({});
+            rawDocs = await cursor.toArray();
+        }
+
+        // Sanitize documents (NEVER expose password hashes)
+        let docs = rawDocs.map(doc => {
+            const clean = { ...doc };
+            if (colName === 'users') {
+                delete clean.passwordHash;
+            }
+            return clean;
+        });
+
+        if (search) {
+            docs = docs.filter(d => JSON.stringify(d).toLowerCase().includes(search));
+        }
+
+        docs.sort((a, b) => {
+            const dateA = new Date(a.createdAt || a.updatedAt || a.addedAt || a.date || 0);
+            const dateB = new Date(b.createdAt || b.updatedAt || b.addedAt || b.date || 0);
+            return dateB - dateA;
+        });
+
+        res.json({
+            collection: colName,
+            totalCount: rawDocs.length,
+            returnedCount: Math.min(docs.length, limit),
+            documents: docs.slice(0, limit)
+        });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch collection entries: ' + err.message });
+    }
 });
 
 // Save health profile

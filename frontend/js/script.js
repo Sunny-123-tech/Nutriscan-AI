@@ -254,34 +254,157 @@
     $('authModal').classList.add('show');
   };
 
-  window.closeAuthModal = function () { $('authModal').classList.remove('show'); };
-  function clearAuthError() { const e = $('authError'); if (e) { e.textContent = ''; e.classList.remove('active'); } }
-  function showAuthError(msg) { const e = $('authError'); if (e) { e.textContent = msg; e.classList.add('active'); } }
+  window.closeAuthModal = function () {
+    $('authModal')?.classList.remove('show');
+  };
 
-  window.goToOnboardingStep = function (step) { goToStep(step); };
+  function clearAuthError() {
+    const e = $('authError');
+    if (e) { e.textContent = ''; e.classList.remove('active'); }
+  }
+
+  function showAuthError(msg) {
+    const e = $('authError');
+    if (e) {
+      e.textContent = msg;
+      e.classList.add('active');
+      e.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }
+
+  function validateStep1() {
+    clearAuthError();
+    if (authMode === 'register') {
+      const name = $('authName')?.value.trim();
+      if (!name) {
+        showAuthError('Please enter your full name.');
+        $('authName')?.focus();
+        return false;
+      }
+    }
+    const email = $('authEmail')?.value.trim();
+    if (!email) {
+      showAuthError('Please enter your email address.');
+      $('authEmail')?.focus();
+      return false;
+    }
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      showAuthError('Please enter a valid email address.');
+      $('authEmail')?.focus();
+      return false;
+    }
+    const password = $('authPassword')?.value;
+    if (!password) {
+      showAuthError('Please enter your password.');
+      $('authPassword')?.focus();
+      return false;
+    }
+    if (password.length < 8) {
+      showAuthError('Password must be at least 8 characters long.');
+      $('authPassword')?.focus();
+      return false;
+    }
+    return true;
+  }
+
+  window.goToOnboardingStep = function (step) {
+    if (step > onboardingStep) {
+      if (onboardingStep === 1 && !validateStep1()) return;
+    }
+    clearAuthError();
+    goToStep(step);
+  };
+
   function goToStep(step) {
     onboardingStep = step;
     [1, 2, 3].forEach(i => {
-      const s = $('authStep' + i); if (s) s.style.display = i === step ? 'block' : 'none';
-      const ind = $('stepIndicator' + i); if (ind) ind.classList.toggle('active', i <= step);
-      const line = $('stepLine' + (i - 1)); if (line) line.classList.toggle('active', i < step);
+      const s = $('authStep' + i);
+      if (s) s.style.display = i === step ? 'block' : 'none';
+      const ind = $('stepIndicator' + i);
+      if (ind) ind.classList.toggle('active', i <= step);
+      const line = $('stepLine' + (i - 1));
+      if (line) line.classList.toggle('active', i < step);
     });
   }
+
+  window.handleAuthFormSubmit = function (e) {
+    if (e) e.preventDefault();
+    if (authMode === 'login') {
+      submitAuth(e);
+    } else {
+      if (onboardingStep === 1) {
+        goToOnboardingStep(2);
+      } else if (onboardingStep === 2) {
+        goToOnboardingStep(3);
+      } else {
+        submitAuth(e);
+      }
+    }
+  };
 
   window.submitAuth = async function (e) {
     if (e) e.preventDefault();
     clearAuthError();
-    const email = $('authEmail')?.value.trim();
-    const password = $('authPassword')?.value;
-    if (!email || !password) return showAuthError('Please fill in all required fields.');
-    if (!/\S+@\S+\.\S+/.test(email)) return showAuthError('Please enter a valid email address.');
-    if (password.length < 6) return showAuthError('Password must be at least 6 characters.');
 
+    if (!validateStep1()) {
+      if (authMode === 'register' && onboardingStep !== 1) goToStep(1);
+      return;
+    }
+
+    const email = $('authEmail')?.value.trim().toLowerCase();
+    const password = $('authPassword')?.value;
     const body = { email, password };
+
+    const submitBtn = authMode === 'register' ? $('btnCompleteRegister') : $('authSubmit');
+    const origBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${authMode === 'register' ? 'Creating Account & Plan...' : 'Signing in...'}`;
+    }
+
     if (authMode === 'register') {
-      const name = $('authName')?.value.trim();
-      if (!name) return showAuthError('Please enter your full name.');
-      body.name = name;
+      body.name = $('authName')?.value.trim();
+
+      // Collect complete health profile from onboarding step 2 and step 3
+      const height = Number($('regHeight')?.value) || null;
+      const weight = Number($('regWeight')?.value) || null;
+      const age = Number($('regAge')?.value) || null;
+      const gender = $('regGender')?.value || 'male';
+      const activityLevel = $('regActivity')?.value || 'moderate';
+      const primaryGoal = $('regGoal')?.value || 'maintenance';
+
+      const diabetes = Boolean($('regCondDiabetes')?.checked);
+      const hypertension = Boolean($('regCondHypertension')?.checked);
+      const heartDisease = Boolean($('regCondHeart')?.checked);
+      const highCholesterol = Boolean($('regCondCholesterol')?.checked);
+      const kidneyDisease = Boolean($('regCondKidney')?.checked);
+      const fattyLiver = Boolean($('regCondFattyLiver')?.checked);
+      const gerd = Boolean($('regCondGERD')?.checked);
+      const celiac = Boolean($('regCondCeliac')?.checked);
+      const lactoseIntolerance = Boolean($('regCondLactose')?.checked);
+      const pcod = Boolean($('regCondPCOD')?.checked);
+      const otherConditions = $('regOtherConditions')?.value.trim() || '';
+
+      const allergies = [
+        $('regAllergyPeanuts')?.checked ? 'peanuts' : null,
+        $('regAllergyTreeNuts')?.checked ? 'tree_nuts' : null,
+        $('regAllergyDairy')?.checked ? 'dairy' : null,
+        $('regAllergyGluten')?.checked ? 'gluten' : null,
+        $('regAllergySoy')?.checked ? 'soy' : null,
+        $('regAllergyEggs')?.checked ? 'eggs' : null,
+        $('regAllergyShellfish')?.checked ? 'shellfish' : null,
+        $('regAllergySesame')?.checked ? 'sesame' : null
+      ].filter(Boolean);
+      const otherAllergies = $('regOtherAllergies')?.value.trim() || '';
+      const diet = document.querySelector('input[name="regDiet"]:checked')?.value || 'none';
+
+      body.healthProfile = {
+        name: body.name,
+        height, weight, age, gender, activityLevel, primaryGoal,
+        diabetes, hypertension, heartDisease, highCholesterol,
+        kidneyDisease, fattyLiver, gerd, celiac, lactoseIntolerance, pcod,
+        otherConditions, allergies, otherAllergies, diet
+      };
     }
 
     try {
@@ -290,35 +413,77 @@
       currentUser = data.user;
       localStorage.setItem('nutriscan_token', authToken);
       localStorage.setItem('nutriscan_user', JSON.stringify(currentUser));
-      if (data.profile) persistProfile(data.profile);
+      if (data.profile) {
+        persistProfile(data.profile);
+      }
       updateAuthUI();
       closeAuthModal();
-      showToast(authMode === 'register' ? 'Account created! Welcome to NutriScan AI.' : 'Welcome back, ' + currentUser.name + '!');
+      showToast(authMode === 'register'
+        ? `🎉 Account created! Welcome, ${currentUser.name}. Profile synced to MongoDB Atlas!`
+        : `👋 Welcome back, ${currentUser.name}! Profile loaded.`);
+
+      // Automatically refresh database entries so new user appears immediately
+      if (typeof refreshDatabaseInspector === 'function') {
+        refreshDatabaseInspector();
+      }
     } catch (err) {
-      showAuthError(err.message);
+      showAuthError(err.message || 'Authentication failed. Please try again.');
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = origBtnHtml;
+      }
     }
   };
 
   window.logout = function () {
-    authToken = null; currentUser = null;
+    authToken = null;
+    currentUser = null;
+    healthProfile = null;
     localStorage.removeItem('nutriscan_token');
     localStorage.removeItem('nutriscan_user');
+    localStorage.removeItem('nutriscan_health_profile');
+
+    const form = $('healthProfileForm');
+    if (form) form.reset();
+    updateDashPreview();
     updateAuthUI();
-    showToast('Signed out.');
+    showToast('Signed out successfully.');
+
+    if (typeof refreshDatabaseInspector === 'function') {
+      refreshDatabaseInspector();
+    }
   };
 
   function updateAuthUI() {
     const c = $('authActions');
-    if (!c) return;
-    if (currentUser && authToken) {
-      c.innerHTML = `
-        <div class="user-pill-badge" onclick="navigateTo('profile')" title="View Health Profile" style="cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 14px;border-radius:20px;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);">
-          <i class="fas fa-user-circle" style="color:#10b981;"></i>
-          <span style="font-weight:600;font-size:0.85rem;">${escHtml(currentUser.name.split(' ')[0])}</span>
-        </div>
-        <button class="btn-secondary btn-sm" onclick="logout()" title="Sign out" style="padding:6px 12px;border-radius:8px;"><i class="fas fa-right-from-bracket"></i></button>`;
-    } else {
-      c.innerHTML = `<button class="btn-auth" onclick="openAuthModal('login')"><i class="fas fa-user"></i> <span>Sign In</span></button>`;
+    if (c) {
+      if (currentUser && authToken) {
+        c.innerHTML = `
+          <div class="user-pill-badge" onclick="navigateTo('profile')" title="View Health Profile" style="cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 14px;border-radius:20px;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);">
+            <i class="fas fa-user-circle" style="color:#10b981;"></i>
+            <span style="font-weight:600;font-size:0.85rem;">${escHtml(currentUser.name.split(' ')[0])}</span>
+          </div>
+          <button class="btn-secondary btn-sm" onclick="logout()" title="Sign out" style="padding:6px 12px;border-radius:8px;"><i class="fas fa-right-from-bracket"></i></button>`;
+      } else {
+        c.innerHTML = `<button class="btn-auth" onclick="openAuthModal('login')"><i class="fas fa-user"></i> <span>Sign In</span></button>`;
+      }
+    }
+
+    // Update Profile Page Database Sync Indicator
+    const syncIndicator = $('profileDbSyncIndicator');
+    const syncText = $('profileDbSyncText');
+    const syncAction = $('profileDbSyncAction');
+    if (syncIndicator && syncText && syncAction) {
+      if (currentUser && authToken) {
+        syncIndicator.className = 'db-sync-indicator';
+        syncText.innerHTML = `<strong>Synced with MongoDB Atlas</strong> &bull; User: ${escHtml(currentUser.name)} (<code>${escHtml(currentUser.email)}</code>)`;
+        syncAction.innerHTML = `<button type="button" class="btn-secondary btn-sm" onclick="navigateTo('adbms'); switchAdbmsTab('unit4');"><i class="fas fa-database"></i> View in Database Explorer</button>`;
+      } else {
+        syncIndicator.className = 'db-sync-indicator guest';
+        syncText.innerHTML = `<strong>Guest Mode (Local Only)</strong> &bull; Sign in or create an account to permanently sync your health profile to MongoDB Atlas.`;
+        syncAction.innerHTML = `<button type="button" class="btn-primary btn-sm" onclick="openAuthModal('register')"><i class="fas fa-user-plus"></i> Sign Up / In</button>`;
+      }
     }
   }
 
@@ -421,12 +586,19 @@
     persistProfile(profile);
 
     if (authToken) {
-      try { await api('/health-profile', { method: 'POST', body: profile }); } catch { /* local saved */ }
+      try {
+        const res = await api('/health-profile', { method: 'POST', body: profile });
+        if (res && res.profile) persistProfile(res.profile);
+        if (typeof refreshDatabaseInspector === 'function') refreshDatabaseInspector();
+      } catch (e) {
+        console.warn('Could not sync profile to MongoDB:', e.message);
+      }
     }
+    updateAuthUI();
 
     const notice = $('profileSaved');
     if (notice) { notice.style.display = 'block'; setTimeout(() => notice.style.display = 'none', 3500); }
-    showToast('Health profile saved! All scans will now use your clinical data.');
+    showToast(authToken ? 'Health profile saved and synced to MongoDB Atlas!' : 'Health profile saved locally! Sign in to sync to MongoDB.');
   };
 
   function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
@@ -2072,9 +2244,12 @@
     } else if (unitId === 'unit3' && !window._unit3Loaded) {
       window._unit3Loaded = true;
       runFragmentationTest();
-    } else if (unitId === 'unit4' && !window._unit4Loaded) {
-      window._unit4Loaded = true;
-      runMongoPipeline();
+    } else if (unitId === 'unit4') {
+      if (typeof refreshDatabaseInspector === 'function') refreshDatabaseInspector();
+      if (!window._unit4Loaded) {
+        window._unit4Loaded = true;
+        runMongoPipeline();
+      }
     } else if (unitId === 'unit5' && !window._unit5Loaded) {
       window._unit5Loaded = true;
       triggerOlapOp('slice');
@@ -2326,6 +2501,179 @@
       showToast(`MongoDB Pipeline complete (${data.executionTimeMs} ms)`);
     } catch (err) {
       if (container) container.innerHTML = `<span style="color:#ef4444;">Pipeline error: ${escHtml(err.message)}</span>`;
+    }
+  };
+
+  // ---------------- LIVE DATABASE INSPECTOR (MONGODB ATLAS) ----------------
+  let currentDbCollection = 'users';
+  let cachedDbEntries = [];
+
+  window.refreshDatabaseInspector = async function () {
+    const badge = $('dbStatusBadge');
+    const badgeText = $('dbStatusText');
+    const clusterHost = $('dbClusterHost');
+    if (badgeText) badgeText.textContent = 'Syncing MongoDB...';
+
+    try {
+      const overview = await api('/database/overview');
+      if (badgeText) {
+        badgeText.textContent = overview.isAtlas
+          ? `MongoDB Atlas Live (${overview.pingMs}ms)`
+          : `Local Database Store (${overview.engine})`;
+      }
+      if (badge) {
+        badge.className = 'db-status-badge ' + (overview.isAtlas ? 'connected' : 'local');
+      }
+      if (clusterHost) {
+        clusterHost.textContent = overview.clusterHost + ' / ' + overview.databaseName;
+      }
+
+      if ($('countColUsers')) $('countColUsers').textContent = overview.counts?.users ?? 0;
+      if ($('countColProfiles')) $('countColProfiles').textContent = overview.counts?.profiles ?? 0;
+      if ($('countColProducts')) $('countColProducts').textContent = overview.counts?.products ?? 0;
+      if ($('countColMealLogs')) $('countColMealLogs').textContent = overview.counts?.mealLogs ?? 0;
+
+      await loadDbCollectionEntries(currentDbCollection);
+    } catch (err) {
+      if (badgeText) badgeText.textContent = 'DB Offline: ' + err.message;
+      if (badge) badge.className = 'db-status-badge error';
+      const wrapper = $('dbEntriesTableWrapper');
+      if (wrapper) {
+        wrapper.innerHTML = `<div class="table-error"><i class="fas fa-triangle-exclamation"></i> Could not reach database: ${escHtml(err.message)}</div>`;
+      }
+    }
+  };
+
+  window.switchDbCollection = async function (colName) {
+    currentDbCollection = colName;
+    ['users', 'profiles', 'products', 'mealLogs'].forEach(c => {
+      const tab = $('tabCol' + capitalize(c));
+      if (tab) tab.classList.toggle('active', c === colName);
+    });
+    const searchInput = $('dbSearchInput');
+    if (searchInput) searchInput.value = '';
+    await loadDbCollectionEntries(colName);
+  };
+
+  async function loadDbCollectionEntries(colName) {
+    const wrapper = $('dbEntriesTableWrapper');
+    if (!wrapper) return;
+    wrapper.innerHTML = `<div class="table-placeholder"><i class="fas fa-spinner fa-spin"></i> Fetching records from MongoDB '${escHtml(colName)}'...</div>`;
+
+    try {
+      const data = await api(`/database/collection/${colName}?limit=100`);
+      cachedDbEntries = data.documents || [];
+      renderDbEntriesTable(colName, cachedDbEntries);
+      if ($('dbCollectionInfo')) {
+        $('dbCollectionInfo').textContent = `Showing ${cachedDbEntries.length} of ${data.totalCount} documents in '${colName}'`;
+      }
+    } catch (err) {
+      wrapper.innerHTML = `<div class="table-error"><i class="fas fa-circle-exclamation"></i> Failed to retrieve collection '${colName}': ${escHtml(err.message)}</div>`;
+    }
+  }
+
+  function renderDbEntriesTable(colName, docs) {
+    const wrapper = $('dbEntriesTableWrapper');
+    if (!wrapper) return;
+
+    if (!docs || docs.length === 0) {
+      wrapper.innerHTML = `<div class="table-empty"><i class="fas fa-database"></i> No records currently stored in collection <strong>${escHtml(colName)}</strong>. New registrations will automatically appear here.</div>`;
+      return;
+    }
+
+    let html = '<div class="table-responsive"><table class="pipeline-data-table db-inspect-table"><thead><tr>';
+
+    if (colName === 'users') {
+      html += '<th>#</th><th>User ID</th><th>Full Name</th><th>Email Address</th><th>Registered Date</th><th>Actions</th>';
+    } else if (colName === 'profiles') {
+      html += '<th>#</th><th>User Name / ID</th><th>Height / Weight</th><th>BMI &amp; Category</th><th>Daily Plan</th><th>Conditions &amp; Allergies</th><th>Last Updated</th>';
+    } else if (colName === 'products') {
+      html += '<th>#</th><th>Barcode</th><th>Product Name</th><th>Brand</th><th>Category</th><th>Processing Level</th><th>Calories / Sugar</th>';
+    } else if (colName === 'mealLogs') {
+      html += '<th>#</th><th>Log ID</th><th>User ID</th><th>Product</th><th>Quantity</th><th>Logged At</th>';
+    }
+
+    html += '</tr></thead><tbody>';
+
+    docs.forEach((doc, idx) => {
+      html += '<tr>';
+      html += `<td style="font-weight:600;color:var(--text-muted);">${idx + 1}</td>`;
+
+      if (colName === 'users') {
+        const isCurrent = currentUser && (currentUser.id === doc.id || currentUser.email === doc.email);
+        const dateStr = doc.createdAt ? new Date(doc.createdAt).toLocaleString() : 'N/A';
+        html += `<td><code>${escHtml(doc.id || doc._id || '')}</code></td>`;
+        html += `<td><strong>${escHtml(doc.name || 'Anonymous')}</strong> ${isCurrent ? '<span class="badge-tag-accent">You</span>' : ''}</td>`;
+        html += `<td><code>${escHtml(doc.email || '')}</code></td>`;
+        html += `<td>${dateStr}</td>`;
+        html += `<td><button class="btn-secondary btn-xs" onclick='viewRawDoc(${JSON.stringify(JSON.stringify(doc))})'><i class="fas fa-code"></i> JSON</button></td>`;
+      } else if (colName === 'profiles') {
+        const height = doc.height ? doc.height + ' cm' : '--';
+        const weight = doc.weight ? doc.weight + ' kg' : '--';
+        const bmi = doc.personalPlan?.bmi || '--';
+        const bmiCat = doc.personalPlan?.bmiCategory || 'N/A';
+        const calories = doc.personalPlan?.tdee ? doc.personalPlan.tdee + ' kcal' : '--';
+        const sugar = doc.personalPlan?.maxSugarGrams ? doc.personalPlan.maxSugarGrams + 'g sugar' : '--';
+        const conditions = [];
+        if (doc.diabetes) conditions.push('Diabetes');
+        if (doc.hypertension) conditions.push('High BP');
+        if (doc.heartDisease) conditions.push('Heart');
+        if (doc.highCholesterol) conditions.push('Cholesterol');
+        if (doc.kidneyDisease) conditions.push('Kidney');
+        if (doc.fattyLiver) conditions.push('Fatty Liver');
+        if (doc.otherConditions) conditions.push(doc.otherConditions);
+        const condBadges = conditions.length > 0 ? conditions.map(c => `<span class="badge-tag-warning">${escHtml(c)}</span>`).join(' ') : '<span class="badge-tag-safe">None Reported</span>';
+        const dateStr = doc.updatedAt ? new Date(doc.updatedAt).toLocaleString() : (doc.createdAt ? new Date(doc.createdAt).toLocaleString() : 'N/A');
+
+        html += `<td><strong>${escHtml(doc.name || doc.userId || '')}</strong></td>`;
+        html += `<td>${height} / ${weight}</td>`;
+        html += `<td><strong>${bmi}</strong> <span class="badge-tag-neutral">${escHtml(bmiCat)}</span></td>`;
+        html += `<td>${calories} &bull; ${sugar}</td>`;
+        html += `<td><div style="display:flex;flex-wrap:wrap;gap:4px;">${condBadges}</div></td>`;
+        html += `<td>${dateStr}</td>`;
+      } else if (colName === 'products') {
+        const energy = doc.nutritionPer100g?.energy ? doc.nutritionPer100g.energy + ' kcal' : '--';
+        const sugar = doc.nutritionPer100g?.sugars !== undefined ? doc.nutritionPer100g.sugars + 'g' : '--';
+        html += `<td><code>${escHtml(doc.barcode || '')}</code></td>`;
+        html += `<td><strong>${escHtml(doc.name || '')}</strong></td>`;
+        html += `<td>${escHtml(doc.brand || 'N/A')}</td>`;
+        html += `<td>${escHtml(doc.category || 'N/A')}</td>`;
+        html += `<td><span class="badge-tag-${doc.processingLevel === 'ultra-processed' ? 'danger' : 'safe'}">${escHtml(doc.processingLevel || 'unknown')}</span></td>`;
+        html += `<td>${energy} &bull; ${sugar} sugar</td>`;
+      } else if (colName === 'mealLogs') {
+        const prodName = doc.product?.name || doc.productName || 'Meal Entry';
+        const qty = doc.quantityGrams ? doc.quantityGrams + 'g' : (doc.quantity || '--');
+        const dateStr = doc.date ? new Date(doc.date).toLocaleString() : (doc.createdAt ? new Date(doc.createdAt).toLocaleString() : 'N/A');
+        html += `<td><code>${escHtml(doc.id || doc._id || '')}</code></td>`;
+        html += `<td><code>${escHtml(doc.userId || '')}</code></td>`;
+        html += `<td><strong>${escHtml(prodName)}</strong></td>`;
+        html += `<td>${qty}</td>`;
+        html += `<td>${dateStr}</td>`;
+      }
+
+      html += '</tr>';
+    });
+
+    html += '</tbody></table></div>';
+    wrapper.innerHTML = html;
+  }
+
+  window.filterCurrentDbEntries = function () {
+    const query = ($('dbSearchInput')?.value || '').trim().toLowerCase();
+    if (!query) {
+      renderDbEntriesTable(currentDbCollection, cachedDbEntries);
+      return;
+    }
+    const filtered = cachedDbEntries.filter(doc => JSON.stringify(doc).toLowerCase().includes(query));
+    renderDbEntriesTable(currentDbCollection, filtered);
+  };
+
+  window.viewRawDoc = function (jsonStr) {
+    try {
+      const obj = typeof jsonStr === 'string' ? JSON.parse(jsonStr) : jsonStr;
+      alert('MongoDB BSON Document:\n\n' + JSON.stringify(obj, null, 2));
+    } catch {
+      alert(jsonStr);
     }
   };
 
@@ -2647,12 +2995,28 @@
     // Pre-load catalog in background
     loadCatalog();
 
-    // Fetch remote profile if logged in
+    // Verify session and fetch remote profile if logged in
     if (authToken) {
       try {
-        const profile = await api('/health-profile');
-        if (profile) persistProfile(profile);
-      } catch { /* use local */ }
+        const me = await api('/auth/me');
+        if (me && me.name) {
+          currentUser = { id: me.id, name: me.name, email: me.email };
+          localStorage.setItem('nutriscan_user', JSON.stringify(currentUser));
+          updateAuthUI();
+        }
+        if (me && me.profile) {
+          persistProfile(me.profile);
+        }
+      } catch (err) {
+        if (err.status === 401) {
+          logout();
+        }
+      }
+    }
+
+    // Auto-fetch database status and entries overview
+    if (typeof refreshDatabaseInspector === 'function') {
+      refreshDatabaseInspector();
     }
 
     // Load trends if already on that page
