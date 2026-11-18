@@ -419,8 +419,13 @@
       updateAuthUI();
       closeAuthModal();
       showToast(authMode === 'register'
-        ? `🎉 Account created! Welcome, ${currentUser.name}. Profile synced to MongoDB Atlas!`
-        : `👋 Welcome back, ${currentUser.name}! Profile loaded.`);
+        ? `🎉 Account created! Welcome, ${currentUser.name}. Your clinical health plan is ready!`
+        : `👋 Welcome back, ${currentUser.name}! Profile plan loaded.`);
+
+      // Automatically navigate to profile page upon registration so user directly sees their created health plan!
+      if (authMode === 'register') {
+        setTimeout(() => navigateTo('profile'), 120);
+      }
 
       // Automatically refresh database entries so new user appears immediately
       if (typeof refreshDatabaseInspector === 'function') {
@@ -447,6 +452,9 @@
     const form = $('healthProfileForm');
     if (form) form.reset();
     updateDashPreview();
+    if (typeof renderHealthPlanDisplay === 'function') {
+      renderHealthPlanDisplay(null);
+    }
     updateAuthUI();
     showToast('Signed out successfully.');
 
@@ -495,6 +503,9 @@
     localStorage.setItem('nutriscan_health_profile', JSON.stringify(p));
     populateProfileForm(p);
     updateDashPreview();
+    if (typeof renderHealthPlanDisplay === 'function') {
+      renderHealthPlanDisplay(p);
+    }
   }
 
   window.updateDashboardPreview = updateDashPreview;
@@ -552,6 +563,9 @@
     // Store computed plan on healthProfile so other features use it
     if (healthProfile) {
       healthProfile._computed = { tdee, maxSugar, maxSodium };
+    }
+    if (typeof renderHealthPlanDisplay === 'function') {
+      renderHealthPlanDisplay(healthProfile);
     }
   }
 
@@ -624,6 +638,319 @@
     if (p.diet) { const r = document.querySelector(`input[name="diet"][value="${p.diet}"]`); if (r) r.checked = true; }
     updateDashPreview();
   }
+
+  /* ═══════════════════════════════════════════════════════════
+     7b. ACTIVE CLINICAL HEALTH PROFILE PLAN DISPLAY
+  ═══════════════════════════════════════════════════════════ */
+  window.scrollToProfileForm = function () {
+    const form = $('healthProfileForm');
+    if (form) {
+      form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const firstInput = $('profileHeight') || $('profileName') || form.querySelector('input');
+      if (firstInput) firstInput.focus();
+    }
+  };
+
+  window.renderHealthPlanDisplay = function (p) {
+    const card = $('activeHealthPlanCard');
+    const heroPill = $('heroPlanPill');
+    const heroPillText = $('heroPlanPillText');
+
+    const profile = p || healthProfile;
+    // If no profile and no current user, hide the active plan card & hero pill
+    if (!profile && !currentUser) {
+      if (card) card.style.display = 'none';
+      if (heroPill) heroPill.style.display = 'none';
+      return;
+    }
+
+    // Extract attributes with fallbacks to active form inputs or sensible defaults
+    const h = Number(profile?.height || $('profileHeight')?.value) || 0;
+    const w = Number(profile?.weight || $('profileWeight')?.value) || 0;
+    const age = Number(profile?.age || $('profileAge')?.value) || 28;
+    const gender = String(profile?.gender || $('profileGender')?.value || 'male').toLowerCase();
+    const activity = String(profile?.activityLevel || $('profileActivity')?.value || 'moderate').toLowerCase();
+    const goal = String(profile?.primaryGoal || $('profileGoal')?.value || 'maintenance').toLowerCase();
+    const userName = profile?.name || currentUser?.name || 'Your';
+
+    // Conditions
+    const diabetes = Boolean(profile?.diabetes ?? $('condDiabetes')?.checked);
+    const hypertension = Boolean(profile?.hypertension ?? $('condHypertension')?.checked);
+    const heart = Boolean(profile?.heartDisease ?? $('condHeart')?.checked);
+    const cholesterol = Boolean(profile?.highCholesterol ?? $('condCholesterol')?.checked);
+    const kidney = Boolean(profile?.kidneyDisease ?? $('condKidney')?.checked);
+    const fattyLiver = Boolean(profile?.fattyLiver ?? $('condFattyLiver')?.checked);
+    const gerd = Boolean(profile?.gerd ?? $('condGERD')?.checked);
+    const celiac = Boolean(profile?.celiac ?? $('condCeliac')?.checked);
+    const lactose = Boolean(profile?.lactoseIntolerance ?? $('condLactose')?.checked);
+    const pcod = Boolean(profile?.pcod ?? $('condPCOD')?.checked);
+    const obesity = Boolean(profile?.obesity ?? $('condObesity')?.checked);
+    const otherCond = String(profile?.otherConditions || $('profileOtherConditions')?.value || '').trim();
+
+    // Allergies
+    let allergies = Array.isArray(profile?.allergies) ? [...profile.allergies] : [];
+    if (!allergies.length) {
+      ['Peanuts', 'TreeNuts', 'Dairy', 'Gluten', 'Soy', 'Eggs', 'Shellfish', 'Sesame'].forEach(a => {
+        if ($('allergy' + a)?.checked) allergies.push(a.toLowerCase());
+      });
+    }
+    const otherAllergies = String(profile?.otherAllergies || $('profileOtherAllergies')?.value || '').trim();
+
+    // Diet
+    const diet = String(profile?.diet || document.querySelector('input[name="diet"]:checked')?.value || 'none').toLowerCase();
+    const otherDiet = String(profile?.otherDiet || $('profileOtherDiet')?.value || '').trim();
+
+    // 1. BMI Calculation
+    let bmiVal = '--', bmiCat = 'Pending', bmiClass = 'badge-normal';
+    if (h >= 50 && w >= 20) {
+      const hm = h / 100;
+      const b = (w / (hm * hm));
+      bmiVal = b.toFixed(1);
+      if (b < 18.5) { bmiCat = 'Underweight'; bmiClass = 'badge-warning'; }
+      else if (b < 25) { bmiCat = 'Normal Weight ✓'; bmiClass = 'badge-normal'; }
+      else if (b < 30) { bmiCat = 'Overweight'; bmiClass = 'badge-warning'; }
+      else { bmiCat = 'Obese'; bmiClass = 'badge-danger'; }
+    }
+
+    // 2. BMR & TDEE (Mifflin-St Jeor)
+    let bmr = 1800;
+    if (h >= 50 && w >= 20) {
+      if (gender === 'female') bmr = Math.round(10 * w + 6.25 * h - 5 * age - 161);
+      else if (gender === 'other') bmr = Math.round(10 * w + 6.25 * h - 5 * age - 80);
+      else bmr = Math.round(10 * w + 6.25 * h - 5 * age + 5);
+    }
+    const actMult = { sedentary: 1.2, light: 1.375, moderate: 1.55, very: 1.725 };
+    const tdee = Math.round(bmr * (actMult[activity] || 1.375));
+
+    // 3. Goal-adjusted Calorie Target
+    let targetCalories = tdee;
+    let calNote = 'Balanced Maintenance';
+    if (goal === 'weight_loss') {
+      targetCalories = Math.max(1200, tdee - 500);
+      calNote = 'Caloric Deficit (-500 kcal/day)';
+    } else if (goal === 'muscle_gain') {
+      targetCalories = tdee + 300;
+      calNote = 'Hypertrophy Surplus (+300 kcal/day)';
+    }
+
+    // 4. Protein Target
+    let targetProtein = 60;
+    if (w > 20) {
+      if (goal === 'muscle_gain') targetProtein = Math.round(w * 1.8);
+      else if (goal === 'weight_loss') targetProtein = Math.round(w * 1.4);
+      else targetProtein = Math.round(w * 1.0);
+    }
+
+    // 5. Sugar Cap
+    let maxSugar = Math.round((targetCalories * 0.10) / 4);
+    if (diabetes) maxSugar = 15;
+    else if (goal === 'weight_loss' || obesity || fattyLiver || pcod) maxSugar = Math.min(maxSugar, 25);
+
+    // 6. Sodium Cap
+    let maxSodium = 2300;
+    if (hypertension || kidney || heart) maxSodium = 1500;
+
+    // 7. Saturated Fat & Fiber
+    let maxSatFat = Math.round((targetCalories * (heart || cholesterol || diabetes ? 0.06 : 0.08)) / 9);
+    const minFiber = gender === 'female' ? 25 : 35;
+
+    // Allow pre-calculated values from backend if present
+    if (profile?.personalPlan) {
+      const pp = profile.personalPlan;
+      if (pp.dailyCalories) targetCalories = pp.dailyCalories;
+      if (pp.bmr) bmr = pp.bmr;
+      if (pp.tdee) tdee = pp.tdee;
+      if (pp.bmi) bmiVal = pp.bmi;
+      if (pp.bmiCategory && pp.bmiCategory !== 'Not calculated') bmiCat = pp.bmiCategory;
+      if (pp.dailyLimits) {
+        if (pp.dailyLimits.protein) targetProtein = pp.dailyLimits.protein;
+        if (pp.dailyLimits.sugar) maxSugar = pp.dailyLimits.sugar;
+        if (pp.dailyLimits.sodium) maxSodium = pp.dailyLimits.sodium;
+        if (pp.dailyLimits.saturatedFat) maxSatFat = pp.dailyLimits.saturatedFat;
+        if (pp.dailyLimits.fiber) minFiber = pp.dailyLimits.fiber;
+      }
+    }
+
+    // Goal & Activity Labels
+    const goalLabels = {
+      weight_loss: 'Weight Loss (-500 kcal)',
+      muscle_gain: 'Muscle & Hypertrophy (+300 kcal)',
+      maintenance: 'Healthy Weight Maintenance',
+      diabetes: 'Glycemic Control & Carb Shield',
+      heart: 'Cardiovascular Longevity'
+    };
+    const actLabels = {
+      sedentary: 'Sedentary (Desk/Low)',
+      light: 'Lightly Active (1-3 d/wk)',
+      moderate: 'Moderately Active (3-5 d/wk)',
+      very: 'Very Active (Athlete)'
+    };
+    const dietLabels = {
+      none: 'No Restrictions',
+      vegetarian: 'Vegetarian',
+      vegan: 'Vegan (Plant-Based)',
+      keto: 'Ketogenic / Low-Carb',
+      mediterranean: 'Mediterranean',
+      paleo: 'Paleo',
+      halal: 'Halal',
+      kosher: 'Kosher'
+    };
+
+    // Update Header
+    if ($('planUserName')) $('planUserName').textContent = `${userName}'s Personalized Clinical Plan`;
+    if ($('planGoalBadge')) $('planGoalBadge').textContent = goalLabels[goal] || 'Healthy Maintenance';
+    if ($('planActivityBadge')) $('planActivityBadge').textContent = actLabels[activity] || 'Moderately Active';
+    if ($('planDailyCalTarget')) $('planDailyCalTarget').textContent = `${targetCalories.toLocaleString()} kcal/day`;
+    if ($('planCalorieNote')) $('planCalorieNote').textContent = calNote;
+
+    // Update Biometrics Strip
+    if ($('planHeightWeight')) {
+      $('planHeightWeight').textContent = (h && w) ? `${h} cm • ${w} kg (${capitalize(gender)}, ${age}y)` : 'Biometrics not fully set';
+    }
+    if ($('planBmiValue')) $('planBmiValue').textContent = bmiVal;
+    if ($('planBmiBadge')) {
+      $('planBmiBadge').textContent = bmiCat;
+      $('planBmiBadge').className = `bmi-badge ${bmiClass}`;
+    }
+    if ($('planBmr')) $('planBmr').textContent = `${bmr.toLocaleString()} kcal`;
+    if ($('planTdee')) $('planTdee').textContent = `${tdee.toLocaleString()} kcal`;
+
+    // Update 6 Nutrient Targets Grid
+    if ($('planCardCalories')) $('planCardCalories').textContent = `${targetCalories.toLocaleString()} kcal`;
+    if ($('planCardProtein')) $('planCardProtein').textContent = `${targetProtein} g/day`;
+    if ($('planCardSugar')) $('planCardSugar').textContent = `${maxSugar} g/day`;
+    if ($('planCardSodium')) $('planCardSodium').textContent = `${maxSodium.toLocaleString()} mg/day`;
+    if ($('planCardSatFat')) $('planCardSatFat').textContent = `< ${maxSatFat} g/day`;
+    if ($('planCardFiber')) $('planCardFiber').textContent = `≥ ${minFiber} g/day`;
+
+    // Render Active Conditions List
+    if ($('planConditionsList')) {
+      const condListEl = $('planConditionsList');
+      const activeConds = [];
+      if (diabetes) activeConds.push({ name: 'Type 2 Diabetes', icon: 'fa-cube' });
+      if (hypertension) activeConds.push({ name: 'Hypertension', icon: 'fa-heart-pulse' });
+      if (heart) activeConds.push({ name: 'Cardiovascular Risk', icon: 'fa-heart-crack' });
+      if (cholesterol) activeConds.push({ name: 'Hypercholesterolemia', icon: 'fa-vial' });
+      if (kidney) activeConds.push({ name: 'Renal / Kidney Guard', icon: 'fa-shield-halved' });
+      if (fattyLiver) activeConds.push({ name: 'Fatty Liver (NAFLD)', icon: 'fa-capsules' });
+      if (gerd) activeConds.push({ name: 'Acid Reflux / GERD', icon: 'fa-fire-flame-curved' });
+      if (celiac) activeConds.push({ name: 'Celiac Disease', icon: 'fa-wheat-awn-circle-exclamation' });
+      if (lactose) activeConds.push({ name: 'Lactose Intolerance', icon: 'fa-ban' });
+      if (pcod) activeConds.push({ name: 'PCOD / PCOS', icon: 'fa-notes-medical' });
+      if (obesity) activeConds.push({ name: 'Clinical Obesity', icon: 'fa-weight-scale' });
+      if (otherCond) activeConds.push({ name: otherCond, icon: 'fa-notes-medical' });
+
+      if (activeConds.length === 0) {
+        condListEl.innerHTML = '<span class="plan-tag-safe"><i class="fas fa-check-circle"></i> None Detected (Healthy Baseline)</span>';
+      } else {
+        condListEl.innerHTML = activeConds.map(c =>
+          `<span class="plan-tag-condition"><i class="fas ${c.icon}"></i> ${escHtml(c.name)}</span>`
+        ).join('');
+      }
+    }
+
+    // Render Allergens List
+    if ($('planAllergensList')) {
+      const alEl = $('planAllergensList');
+      const allAllergies = [...allergies];
+      if (otherAllergies) allAllergies.push(otherAllergies);
+
+      if (allAllergies.length === 0) {
+        alEl.innerHTML = '<span class="plan-tag-safe"><i class="fas fa-check-circle"></i> No Food Allergies Registered</span>';
+      } else {
+        alEl.innerHTML = allAllergies.map(a =>
+          `<span class="plan-tag-allergen"><i class="fas fa-triangle-exclamation"></i> ${escHtml(capitalize(a.replace('_', ' ')))}</span>`
+        ).join('');
+      }
+    }
+
+    // Render Diet Tag
+    if ($('planDietTag')) {
+      const dietName = otherDiet ? `${otherDiet} (${dietLabels[diet] || diet})` : (dietLabels[diet] || 'No Restrictions');
+      $('planDietTag').innerHTML = `<i class="fas fa-utensils"></i> ${escHtml(dietName)}`;
+    }
+
+    // Dynamic Clinical AI Directives List
+    if ($('planAiDirectives')) {
+      const dirEl = $('planAiDirectives');
+      const directives = [];
+
+      directives.push({
+        icon: 'fa-fire',
+        color: '#f59e0b',
+        text: `Target energy expenditure calibrated to <strong>${targetCalories.toLocaleString()} kcal/day</strong> (${calNote}).`
+      });
+
+      if (diabetes) {
+        directives.push({
+          icon: 'fa-triangle-exclamation',
+          color: '#ef4444',
+          text: `<strong>Glycemic Ceiling:</strong> Added sugar strictly capped at <strong>15g/day</strong>. Packaged foods with &gt;5g sugar/100g will trigger severe warnings during scans.`
+        });
+      } else {
+        directives.push({
+          icon: 'fa-cube',
+          color: '#818cf8',
+          text: `Daily sugar limit calibrated to <strong>${maxSugar}g/day</strong> to preserve metabolic and pancreatic sensitivity.`
+        });
+      }
+
+      if (hypertension || heart || kidney) {
+        directives.push({
+          icon: 'fa-heart-pulse',
+          color: '#ef4444',
+          text: `<strong>Vascular Defense:</strong> Sodium capped at <strong>${maxSodium.toLocaleString()} mg/day</strong>. Products with &gt;400mg sodium/serving are flagged as high arterial strain.`
+        });
+      } else {
+        directives.push({
+          icon: 'fa-droplet',
+          color: '#06b6d4',
+          text: `Sodium threshold set to <strong>${maxSodium.toLocaleString()} mg/day</strong> for fluid homeostasis and renal health.`
+        });
+      }
+
+      if (allergies.length > 0 || otherAllergies) {
+        directives.push({
+          icon: 'fa-shield-virus',
+          color: '#f59e0b',
+          text: `<strong>Allergen Shield:</strong> OCR and barcode scanners will automatically flag and block items containing <em>${escHtml([...allergies, otherAllergies].filter(Boolean).join(', '))}</em>.`
+        });
+      }
+
+      if (celiac) {
+        directives.push({
+          icon: 'fa-wheat-awn-circle-exclamation',
+          color: '#ef4444',
+          text: `<strong>Strict Celiac Guard:</strong> Any trace of wheat, barley, rye, or malt is automatically marked non-consumable.`
+        });
+      }
+
+      directives.push({
+        icon: 'fa-dumbbell',
+        color: '#10b981',
+        text: `Prescribed daily protein target of <strong>${targetProtein}g</strong> to support muscle preservation and recovery.`
+      });
+
+      directives.push({
+        icon: 'fa-seedling',
+        color: '#10b981',
+        text: `Target minimum fiber of <strong>${minFiber}g/day</strong> to nourish gut microbiome and regulate postprandial glucose.`
+      });
+
+      dirEl.innerHTML = directives.map(d =>
+        `<li><i class="fas ${d.icon}" style="color:${d.color};"></i> <span>${d.text}</span></li>`
+      ).join('');
+    }
+
+    // Reveal card in Profile section
+    if (card) card.style.display = 'block';
+
+    // Update and reveal the Hero Banner Pill on Home
+    if (heroPill && heroPillText) {
+      heroPillText.textContent = `Active Plan: ${userName}'s Blueprint (${targetCalories.toLocaleString()} kcal • ${goalLabels[goal] || 'Maintenance'})`;
+      heroPill.style.display = 'flex';
+    }
+  };
 
   /* ═══════════════════════════════════════════════════════════
      8. SCAN HUB — TAB SWITCHING
@@ -2989,8 +3316,14 @@
     updateAuthUI();
     updateIntakeBadge();
 
-    // Pre-load profile form
-    if (healthProfile) { populateProfileForm(healthProfile); updateDashPreview(); }
+    // Pre-load profile form & active health profile plan
+    if (healthProfile) {
+      populateProfileForm(healthProfile);
+      updateDashPreview();
+      if (typeof renderHealthPlanDisplay === 'function') {
+        renderHealthPlanDisplay(healthProfile);
+      }
+    }
 
     // Pre-load catalog in background
     loadCatalog();

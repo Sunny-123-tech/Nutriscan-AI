@@ -5761,3 +5761,434 @@ textarea:focus {
   background: rgba(245, 158, 11, 0.08);
   border-color: rgba(245, 158, 11, 0.25);
 }
+
+/* ================== ACTIVE HEALTH PROFILE PLAN CARD ================== */
+.active-health-plan-card {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg, 16px);
+  padding: 1.75rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.active-health-plan-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #10b981, #38bdf8, #818cf8);
+}
+
+.plan-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.plan-header-identity {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.plan-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.plan-header-identity h3 {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.plan-header-identity p {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.badge-plan-goal {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
+}
+
+.badge-plan-activity {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.plan-header-cal-pill {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(56, 189, 248, 0.12));
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  padding: 0.75rem 1.25rem;
+  border-radius: 12px;
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+}
+
+.plan-header-cal-pill .pill-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.plan-header-cal-pill strong {
+  font-size: 1.35rem;
+  color: #10b981;
+  font-weight: 800;
+}
+
+.plan-header-cal-pill .pill-subtext {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
+.plan-biometrics-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+}
+
+.plan-bio-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.bio-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.bio-val {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.bio-val-group {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.bmi-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 12px;
+}
+
+.bmi-badge.normal {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+}
+
+.bmi-badge.under {
+  background: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+}
+
+.bmi-badge.over {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.plan-targets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 1rem;
+}
+
+.target-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.target-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.target-card .t-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.target-cal .t-icon { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+.target-protein .t-icon { background: rgba(99, 102, 241, 0.15); color: #818cf8; }
+.target-sugar .t-icon { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+.target-sodium .t-icon { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+.target-satfat .t-icon { background: rgba(236, 72, 153, 0.15); color: #ec4899; }
+.target-fiber .t-icon { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+
+.target-card .t-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.t-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.t-val {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0.15rem 0;
+}
+
+.t-sub {
+  font-size: 0.70rem;
+  color: var(--text-secondary);
+}
+
+.plan-guardrails-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.guardrail-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.g-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 0.5rem;
+}
+
+.plan-conditions-list, .plan-allergens-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.plan-tag-condition {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.82rem;
+}
+
+.plan-tag-condition i {
+  color: #ef4444;
+  margin-top: 2px;
+}
+
+.plan-tag-condition strong {
+  display: block;
+  color: var(--text-primary);
+}
+
+.plan-tag-condition small {
+  display: block;
+  color: #ef4444;
+  font-size: 0.72rem;
+}
+
+.plan-tag-allergy {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #f59e0b;
+  padding: 0.45rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.plan-tag-allergy small {
+  background: #f59e0b;
+  color: #000;
+  font-weight: 800;
+  font-size: 0.65rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+}
+
+.plan-tag-diet {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #10b981;
+  padding: 0.5rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.plan-tag-safe {
+  color: #10b981;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  padding: 0.5rem 0;
+}
+
+.plan-directives-box {
+  background: rgba(129, 140, 248, 0.06);
+  border: 1px solid rgba(129, 140, 248, 0.25);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+}
+
+.d-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+
+.d-header h4 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.plan-directives-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.plan-directives-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.plan-directives-list li i {
+  color: #10b981;
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+.plan-directives-list li strong {
+  color: var(--text-primary);
+}
+
+.plan-footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding-top: 0.5rem;
+}
+
+.hero-plan-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  border-radius: 30px;
+  padding: 0.5rem 1.25rem;
+  cursor: pointer;
+  margin-bottom: 1.25rem;
+  transition: all 0.2s ease;
+}
+
+.hero-plan-pill:hover {
+  background: rgba(16, 185, 129, 0.2);
+  transform: translateY(-1px);
+}
+
+.hero-plan-pill-content {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: #10b981;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.hero-plan-pill-cta {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}

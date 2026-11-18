@@ -354,6 +354,15 @@
                         </div>
                     </div>
 
+                    <!-- Logged-in Active Health Profile Plan Indicator Banner -->
+                    <div class="hero-plan-pill" id="heroPlanPill" style="display:none;" onclick="navigateTo('profile')" title="Click to view full clinical health profile plan">
+                        <div class="hero-plan-pill-content">
+                            <i class="fas fa-heart-pulse"></i>
+                            <span id="heroPlanPillText">Active Plan: Loading...</span>
+                        </div>
+                        <span class="hero-plan-pill-cta">View Clinical Blueprint <i class="fas fa-arrow-right"></i></span>
+                    </div>
+
                     <div class="hero-buttons">
                         <button class="btn-primary btn-glow" onclick="navigateTo('scan')">
                             <i class="fas fa-camera"></i> Launch Scan Hub
@@ -2263,6 +2272,157 @@ CREATE TABLE nutriscan_telemetry.user_glycemic_intake_stream (
                             <span class="metric-label">Max Sodium Cap</span>
                             <strong id="dashSodium">-- mg / day</strong>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Comprehensive Active Health Profile Plan Blueprint -->
+                <div class="active-health-plan-card" id="activeHealthPlanCard" style="display:none;">
+                    <div class="plan-card-header">
+                        <div class="plan-header-identity">
+                            <div class="plan-avatar"><i class="fas fa-user-doctor"></i></div>
+                            <div>
+                                <h3 id="planUserName">Your Clinical Health Profile Plan</h3>
+                                <p id="planMeta">
+                                    <span class="badge-plan-goal" id="planGoalBadge">Healthy Weight Maintenance</span>
+                                    <span class="badge-plan-activity" id="planActivityBadge">Moderately Active</span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="plan-header-cal-pill">
+                            <span class="pill-label">Prescribed Daily Target</span>
+                            <strong id="planDailyCalTarget">2,000 kcal/day</strong>
+                            <span class="pill-subtext" id="planCalorieNote">Maintenance Balance</span>
+                        </div>
+                    </div>
+
+                    <!-- 4-Metric Biometric Summary Strip -->
+                    <div class="plan-biometrics-strip">
+                        <div class="plan-bio-item">
+                            <span class="bio-label"><i class="fas fa-ruler-vertical"></i> Height &amp; Weight</span>
+                            <strong class="bio-val" id="planHeightWeight">-- cm &bull; -- kg</strong>
+                        </div>
+                        <div class="plan-bio-item">
+                            <span class="bio-label"><i class="fas fa-weight-scale"></i> Body Mass Index (BMI)</span>
+                            <div class="bio-val-group">
+                                <strong class="bio-val" id="planBmiValue">--</strong>
+                                <span class="bmi-badge" id="planBmiBadge">Pending</span>
+                            </div>
+                        </div>
+                        <div class="plan-bio-item">
+                            <span class="bio-label"><i class="fas fa-bolt"></i> Basal Metabolic Rate (BMR)</span>
+                            <strong class="bio-val" id="planBmr">-- kcal</strong>
+                        </div>
+                        <div class="plan-bio-item">
+                            <span class="bio-label"><i class="fas fa-person-running"></i> Maintenance TDEE</span>
+                            <strong class="bio-val" id="planTdee">-- kcal</strong>
+                        </div>
+                    </div>
+
+                    <!-- 6 Daily Nutrient Limits & Targets Grid -->
+                    <div class="plan-targets-grid">
+                        <div class="target-card target-cal">
+                            <div class="t-icon"><i class="fas fa-fire"></i></div>
+                            <div class="t-details">
+                                <span class="t-label">Daily Calories</span>
+                                <strong class="t-val" id="planCardCalories">-- kcal</strong>
+                                <span class="t-sub">Target energy intake</span>
+                            </div>
+                        </div>
+                        <div class="target-card target-protein">
+                            <div class="t-icon"><i class="fas fa-dumbbell"></i></div>
+                            <div class="t-details">
+                                <span class="t-label">Daily Protein Goal</span>
+                                <strong class="t-val" id="planCardProtein">-- g/day</strong>
+                                <span class="t-sub">Lean mass &amp; recovery</span>
+                            </div>
+                        </div>
+                        <div class="target-card target-sugar">
+                            <div class="t-icon"><i class="fas fa-cube"></i></div>
+                            <div class="t-details">
+                                <span class="t-label">Max Added Sugar</span>
+                                <strong class="t-val" id="planCardSugar">-- g/day</strong>
+                                <span class="t-sub">Clinical glycemic ceiling</span>
+                            </div>
+                        </div>
+                        <div class="target-card target-sodium">
+                            <div class="t-icon"><i class="fas fa-droplet"></i></div>
+                            <div class="t-details">
+                                <span class="t-label">Max Sodium Cap</span>
+                                <strong class="t-val" id="planCardSodium">-- mg/day</strong>
+                                <span class="t-sub">Vascular pressure limit</span>
+                            </div>
+                        </div>
+                        <div class="target-card target-satfat">
+                            <div class="t-icon"><i class="fas fa-heart-pulse"></i></div>
+                            <div class="t-details">
+                                <span class="t-label">Max Saturated Fat</span>
+                                <strong class="t-val" id="planCardSatFat">-- g/day</strong>
+                                <span class="t-sub">Lipid &amp; arterial health</span>
+                            </div>
+                        </div>
+                        <div class="target-card target-fiber">
+                            <div class="t-icon"><i class="fas fa-seedling"></i></div>
+                            <div class="t-details">
+                                <span class="t-label">Min Daily Fiber</span>
+                                <strong class="t-val" id="planCardFiber">-- g/day</strong>
+                                <span class="t-sub">Gut microbiome &amp; satiety</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Clinical Safety Guardrails: Conditions, Allergies & Diet -->
+                    <div class="plan-guardrails-row">
+                        <div class="guardrail-box">
+                            <div class="g-header">
+                                <i class="fas fa-heart-pulse" style="color:#ef4444;"></i>
+                                <span>Chronic Conditions Active Alarms</span>
+                            </div>
+                            <div class="plan-conditions-list" id="planConditionsList">
+                                <span class="plan-tag-safe"><i class="fas fa-check-circle"></i> None</span>
+                            </div>
+                        </div>
+                        <div class="guardrail-box">
+                            <div class="g-header">
+                                <i class="fas fa-shield-virus" style="color:#f59e0b;"></i>
+                                <span>Allergen Shield &amp; Rejection Guard</span>
+                            </div>
+                            <div class="plan-allergens-list" id="planAllergensList">
+                                <span class="plan-tag-safe"><i class="fas fa-check-circle"></i> None</span>
+                            </div>
+                        </div>
+                        <div class="guardrail-box">
+                            <div class="g-header">
+                                <i class="fas fa-utensils" style="color:#10b981;"></i>
+                                <span>Dietary Lifestyle</span>
+                            </div>
+                            <div class="plan-diet-container">
+                                <span class="plan-tag-diet" id="planDietTag"><i class="fas fa-utensils"></i> No Restrictions</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Clinical Nutrition Guidance / Directives -->
+                    <div class="plan-directives-box">
+                        <div class="d-header">
+                            <i class="fas fa-brain" style="color:#818cf8;"></i>
+                            <h4>Personalized Clinical Directives &amp; Scan Rules</h4>
+                        </div>
+                        <ul class="plan-directives-list" id="planAiDirectives">
+                            <li><i class="fas fa-circle-check"></i> <span>Clinical thresholds calibrated to your profile.</span></li>
+                        </ul>
+                    </div>
+
+                    <!-- Quick Actions Footer -->
+                    <div class="plan-footer-actions">
+                        <button class="btn-primary" onclick="navigateTo('scan')">
+                            <i class="fas fa-camera"></i> Scan Food Against This Plan
+                        </button>
+                        <button class="btn-secondary" onclick="scrollToProfileForm()">
+                            <i class="fas fa-pen-to-square"></i> Edit Biometrics Below
+                        </button>
+                        <button class="btn-outline" onclick="navigateTo('adbms'); switchAdbmsTab('unit4');">
+                            <i class="fas fa-database"></i> View in MongoDB Atlas Inspector
+                        </button>
                     </div>
                 </div>
 

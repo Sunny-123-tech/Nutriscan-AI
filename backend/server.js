@@ -2402,15 +2402,44 @@ app.post('/api/auth/login', async (req, res) => {
 
         let profile = null;
         try {
-            const rawProfile = await collections().profiles.findOne({ userId: user.id });
-            if (rawProfile) {
-                profile = {
-                    ...rawProfile,
-                    personalPlan: calculatePersonalHealthPlan(rawProfile)
+            let rawProfile = await collections().profiles.findOne({ userId: user.id });
+            if (!rawProfile) {
+                const defaultProfile = {
+                    id: uuidv4(),
+                    userId: user.id,
+                    name: user.name,
+                    height: 170,
+                    weight: 68,
+                    age: 28,
+                    gender: 'male',
+                    activityLevel: 'moderate',
+                    primaryGoal: 'maintenance',
+                    diabetes: false,
+                    hypertension: false,
+                    heartDisease: false,
+                    highCholesterol: false,
+                    kidneyDisease: false,
+                    fattyLiver: false,
+                    gerd: false,
+                    celiac: false,
+                    lactoseIntolerance: false,
+                    pcod: false,
+                    otherConditions: '',
+                    allergies: [],
+                    otherAllergies: '',
+                    diet: 'none',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
                 };
+                await collections().profiles.insertOne(defaultProfile);
+                rawProfile = defaultProfile;
             }
+            profile = {
+                ...rawProfile,
+                personalPlan: calculatePersonalHealthPlan(rawProfile)
+            };
         } catch (e) {
-            console.warn('Could not fetch user profile on login:', e.message);
+            console.warn('Could not fetch or provision user profile on login:', e.message);
         }
 
         console.log(`🔓 [MongoDB Atlas] User authenticated: ${user.name} <${user.email}>`);
@@ -2429,14 +2458,45 @@ app.post('/api/auth/login', async (req, res) => {
 app.get('/api/auth/me', requireAuth, async (req, res) => {
     let profile = null;
     try {
-        const rawProfile = await collections().profiles.findOne({ userId: req.user.id });
-        if (rawProfile) {
-            profile = {
-                ...rawProfile,
-                personalPlan: calculatePersonalHealthPlan(rawProfile)
+        let rawProfile = await collections().profiles.findOne({ userId: req.user.id });
+        if (!rawProfile) {
+            const defaultProfile = {
+                id: uuidv4(),
+                userId: req.user.id,
+                name: req.user.name,
+                height: 170,
+                weight: 68,
+                age: 28,
+                gender: 'male',
+                activityLevel: 'moderate',
+                primaryGoal: 'maintenance',
+                diabetes: false,
+                hypertension: false,
+                heartDisease: false,
+                highCholesterol: false,
+                kidneyDisease: false,
+                fattyLiver: false,
+                gerd: false,
+                celiac: false,
+                lactoseIntolerance: false,
+                pcod: false,
+                otherConditions: '',
+                allergies: [],
+                otherAllergies: '',
+                diet: 'none',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
             };
+            await collections().profiles.insertOne(defaultProfile);
+            rawProfile = defaultProfile;
         }
-    } catch (e) {}
+        profile = {
+            ...rawProfile,
+            personalPlan: calculatePersonalHealthPlan(rawProfile)
+        };
+    } catch (e) {
+        console.warn('Could not fetch or provision profile for /auth/me:', e.message);
+    }
     res.json({ id: req.user.id, name: req.user.name, email: req.user.email, profile });
 });
 
