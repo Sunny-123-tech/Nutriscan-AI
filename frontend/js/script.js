@@ -486,7 +486,7 @@
       if (currentUser && authToken) {
         syncIndicator.className = 'db-sync-indicator';
         syncText.innerHTML = `<strong>Synced with MongoDB Atlas</strong> &bull; User: ${escHtml(currentUser.name)} (<code>${escHtml(currentUser.email)}</code>)`;
-        syncAction.innerHTML = `<button type="button" class="btn-secondary btn-sm" onclick="navigateTo('adbms'); switchAdbmsTab('unit4');"><i class="fas fa-database"></i> View in Database Explorer</button>`;
+        syncAction.innerHTML = `<button type="button" class="btn-secondary btn-sm" onclick="navigateTo('adbms');"><i class="fas fa-database"></i> View in Database Explorer</button>`;
       } else {
         syncIndicator.className = 'db-sync-indicator guest';
         syncText.innerHTML = `<strong>Guest Mode (Local Only)</strong> &bull; Sign in or create an account to permanently sync your health profile to MongoDB Atlas.`;
@@ -2534,57 +2534,27 @@
   let parallelismInitialized = false;
   function initParallelismView() {
     initAdbmsView();
-    switchAdbmsTab('unit2');
   }
 
   /* ═══════════════════════════════════════════════════════════
-     19. ADBMS INTERACTIVE STUDIO CONTROLLER (UNITS I - VI)
+     19. PARALLEL DATABASES STUDIO CONTROLLER
   ═══════════════════════════════════════════════════════════ */
-  let currentAdbmsTab = 'unit1';
-  let adbmsInitialized = false;
-
   window.initAdbmsView = function () {
-    if (!adbmsInitialized) {
-      adbmsInitialized = true;
-      switchAdbmsTab('unit1');
+    const pane = $('adbmsPaneUnit2');
+    if (pane) pane.classList.add('active');
+    const tabBtn = $('tabAdbmsUnit2');
+    if (tabBtn) tabBtn.classList.add('active');
+    if (!parallelismInitialized) {
+      parallelismInitialized = true;
+      selectBenchmarkWorkload('intra');
+    }
+    if (typeof refreshDatabaseInspector === 'function') {
+      refreshDatabaseInspector();
     }
   };
 
   window.switchAdbmsTab = function (unitId) {
-    currentAdbmsTab = unitId;
-    document.querySelectorAll('.adbms-unit-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.adbms-pane').forEach(p => p.classList.remove('active'));
-
-    const tabBtn = $(`tabAdbms${unitId.charAt(0).toUpperCase() + unitId.slice(1)}`);
-    const pane = $(`adbmsPane${unitId.charAt(0).toUpperCase() + unitId.slice(1)}`);
-
-    if (tabBtn) tabBtn.classList.add('active');
-    if (pane) pane.classList.add('active');
-
-    // Auto-trigger initial data loads per unit
-    if (unitId === 'unit1' && !window._unit1Loaded) {
-      window._unit1Loaded = true;
-      runRelationalTest('domain_violation');
-    } else if (unitId === 'unit2' && !parallelismInitialized) {
-      parallelismInitialized = true;
-      selectBenchmarkWorkload('intra');
-    } else if (unitId === 'unit3' && !window._unit3Loaded) {
-      window._unit3Loaded = true;
-      runFragmentationTest();
-    } else if (unitId === 'unit4') {
-      if (typeof refreshDatabaseInspector === 'function') refreshDatabaseInspector();
-      if (!window._unit4Loaded) {
-        window._unit4Loaded = true;
-        runMongoPipeline();
-      }
-    } else if (unitId === 'unit5' && !window._unit5Loaded) {
-      window._unit5Loaded = true;
-      triggerOlapOp('slice');
-    } else if (unitId === 'unit6' && !window._unit6Loaded) {
-      window._unit6Loaded = true;
-      runAprioriMining();
-      runKMeansClustering();
-    }
+    window.initAdbmsView();
   };
 
   // Syllabus Modal

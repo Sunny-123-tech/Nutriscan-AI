@@ -32,7 +32,7 @@
         <div class="nav-links">
             <a href="#home" class="active" id="navHome"><i class="fas fa-house"></i> Home</a>
             <a href="#scan" id="navScan"><i class="fas fa-barcode"></i> Scan Hub</a>
-            <a href="#adbms" id="navADBMS"><i class="fas fa-database"></i> ADBMS Studio</a>
+            <a href="#adbms" id="navADBMS"><i class="fas fa-database"></i> Parallel Databases</a>
             <a href="#trends" id="navTrends"><i class="fas fa-chart-line"></i> Health Trends</a>
             <a href="#profile" id="navProfile"><i class="fas fa-user-gear"></i> Health Plan</a>
             <a href="#about" id="navAbout"><i class="fas fa-circle-info"></i> About</a>
@@ -80,7 +80,7 @@
         <div class="mobile-nav-items">
             <a href="#home" onclick="toggleMobileMenu()"><i class="fas fa-house"></i> Home</a>
             <a href="#scan" onclick="toggleMobileMenu()"><i class="fas fa-barcode"></i> Scan Hub</a>
-            <a href="#adbms" onclick="toggleMobileMenu()"><i class="fas fa-database"></i> ADBMS Studio</a>
+            <a href="#adbms" onclick="toggleMobileMenu()"><i class="fas fa-database"></i> Parallel Databases</a>
             <a href="#trends" onclick="toggleMobileMenu()"><i class="fas fa-chart-line"></i> Health Trends</a>
             <a href="#profile" onclick="toggleMobileMenu()"><i class="fas fa-user-gear"></i> Health Profile</a>
             <a href="#about" onclick="toggleMobileMenu()"><i class="fas fa-circle-info"></i> About</a>
@@ -368,7 +368,7 @@
                             <i class="fas fa-camera"></i> Launch Scan Hub
                         </button>
                         <button class="btn-secondary" onclick="navigateTo('adbms')">
-                            <i class="fas fa-database"></i> ADBMS Studio (Units I–VI)
+                            <i class="fas fa-database"></i> Parallel Databases Studio
                         </button>
                         <button class="btn-outline" onclick="navigateTo('trends')">
                             <i class="fas fa-chart-line"></i> Health Trends
@@ -506,10 +506,10 @@
                 </div>
                 <div class="feature-card feature-glow feature-clickable" onclick="navigateTo('adbms')"
                     style="cursor:pointer; border-color: rgba(16, 185, 129, 0.4);">
-                    <div class="feature-icon"><i class="fas fa-database"></i></div>
-                    <h3>ADBMS Academic &amp; Research Lab</h3>
-                    <p>Interactive laboratory covering all 6 syllabus units: Relational Constraints, Parallel Hash-Join, Distributed 2PC, NoSQL Pipelines, OLAP Cubes, and Apriori Mining.</p>
-                    <span class="feature-cta"><i class="fas fa-arrow-right"></i> Open ADBMS Studio (Units I–VI)</span>
+                    <div class="feature-icon"><i class="fas fa-bolt"></i></div>
+                    <h3>Parallel Databases Studio</h3>
+                    <p>High-performance database laboratory: Shared Memory, Shared Disk, Shared Nothing MPP architectures, Intra-Query Map-Reduce, Inter-Query Concurrency, and Parallel Hash-Join optimizations.</p>
+                    <span class="feature-cta"><i class="fas fa-arrow-right"></i> Open Parallel Databases Studio</span>
                 </div>
             </div>
         </section>
@@ -864,7 +864,7 @@
                         <span class="telemetry-badge-speedup" id="queryEngineSpeedupBadge"><i class="fas fa-gauge-high"></i> 4.8x faster than sequential DB scan</span>
                     </div>
                     <button class="btn-telemetry-benchmark" onclick="navigateTo('adbms')">
-                        <i class="fas fa-database"></i> <span>ADBMS Studio (Units I–VI)</span> <i class="fas fa-arrow-right"></i>
+                        <i class="fas fa-bolt"></i> <span>Parallel Databases Studio</span> <i class="fas fa-arrow-right"></i>
                     </button>
                 </div>
 
@@ -1206,183 +1206,30 @@
             </div>
         </section>
 
-        <!-- 4.5. ADVANCED DATABASE MANAGEMENT SYSTEMS (ADBMS) STUDIO (UNITS I–VI) -->
+        <!-- 4.5. PARALLEL DATABASES STUDIO -->
         <section id="adbms" class="section">
             <div class="parallelism-container adbms-main-container">
                 <div class="section-heading-center">
-                    <span class="sub-tag"><i class="fas fa-graduation-cap"></i> Complete ADBMS Syllabus Engine (Units I – VI)</span>
-                    <h2>🏛️ Advanced Database Systems (ADBMS) Interactive Studio</h2>
-                    <p>Production-grade academic and engineering implementation powering NutriScan AI across all 6 ADBMS syllabus units: <strong>Relational Constraints &amp; Anomalies</strong>, <strong>Parallel Query Execution &amp; Hash-Join</strong>, <strong>Distributed DBMS &amp; 2-Phase Commit (2PC)</strong>, <strong>NoSQL MongoDB &amp; Apache Cassandra</strong>, <strong>Data Warehousing &amp; OLAP Cubes</strong>, and <strong>Data Mining with Apriori &amp; K-Means</strong>.</p>
-                    <div style="margin-top: 1rem; display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap;">
-                        <button class="btn-secondary btn-sm" onclick="openAdbmsSyllabusModal()">
-                            <i class="fas fa-book-bookmark"></i> View Syllabus Alignment Matrix
-                        </button>
-                        <span class="badge-status-pill"><i class="fas fa-circle-check" style="color:#10b981;"></i> 6 of 6 Units Live &amp; Executable</span>
-                    </div>
+                    <span class="sub-tag"><i class="fas fa-bolt"></i> High-Throughput Query Processing &amp; Architecture Engine</span>
+                    <h2>⚡ Parallel Databases Interactive Studio</h2>
+                    <p>Production-grade academic and engineering implementation powering NutriScan AI: <strong>Shared Memory</strong>, <strong>Shared Disk</strong>, <strong>Shared Nothing (MPP)</strong>, <strong>Intra-Query Map-Reduce Parallelism</strong>, <strong>Inter-Query High-Concurrency Connection Pooling</strong>, and <strong>Parallel Hash-Join Execution</strong>.</p>
                 </div>
 
-                <!-- Unit Navigation Tab Strip -->
-                <div class="adbms-unit-nav-tabs">
-                    <button class="adbms-unit-tab active" id="tabAdbmsUnit1" onclick="switchAdbmsTab('unit1')">
-                        <i class="fas fa-table-cells"></i>
-                        <span>Unit I: Relational Model</span>
-                    </button>
-                    <button class="adbms-unit-tab" id="tabAdbmsUnit2" onclick="switchAdbmsTab('unit2')">
+                <!-- Navigation Focus Tab Strip -->
+                <div class="adbms-unit-nav-tabs" style="justify-content: center;">
+                    <button class="adbms-unit-tab active" id="tabAdbmsUnit2" onclick="switchAdbmsTab('unit2')">
                         <i class="fas fa-bolt"></i>
-                        <span>Unit II: Parallel Databases</span>
-                    </button>
-                    <button class="adbms-unit-tab" id="tabAdbmsUnit3" onclick="switchAdbmsTab('unit3')">
-                        <i class="fas fa-network-wired"></i>
-                        <span>Unit III: Distributed &amp; 2PC</span>
-                    </button>
-                    <button class="adbms-unit-tab" id="tabAdbmsUnit4" onclick="switchAdbmsTab('unit4')">
-                        <i class="fas fa-leaf"></i>
-                        <span>Unit IV: NoSQL &amp; Cassandra</span>
-                    </button>
-                    <button class="adbms-unit-tab" id="tabAdbmsUnit5" onclick="switchAdbmsTab('unit5')">
-                        <i class="fas fa-cubes"></i>
-                        <span>Unit V: Data Warehouse &amp; OLAP</span>
-                    </button>
-                    <button class="adbms-unit-tab" id="tabAdbmsUnit6" onclick="switchAdbmsTab('unit6')">
-                        <i class="fas fa-brain"></i>
-                        <span>Unit VI: Data Mining &amp; KDD</span>
+                        <span>Parallel Databases</span>
                     </button>
                 </div>
 
                 <!-- ========================================================
-                     UNIT I PANE: RELATIONAL DATA MODEL: A REVIEW
+                     PARALLEL DATABASES
                      ======================================================== -->
-                <div class="adbms-pane active" id="adbmsPaneUnit1">
+                <div class="adbms-pane active" id="adbmsPaneUnit2">
                     <div class="pane-header-box">
                         <div class="pane-header-left">
-                            <span class="unit-badge">UNIT-I</span>
-                            <h3>Relational Data Model, Constraints, Anomalies &amp; Normalization</h3>
-                            <p>Explores relational database schemas, domain/key/entity/referential integrity constraints, and live simulation of <strong>Insertion</strong>, <strong>Deletion</strong>, and <strong>Modification Anomalies</strong> with 3NF/BCNF normalization remedies.</p>
-                        </div>
-                    </div>
-
-                    <!-- Relational Schema Cards -->
-                    <div class="relational-schema-grid">
-                        <div class="schema-table-card">
-                            <div class="schema-table-header">
-                                <i class="fas fa-table"></i>
-                                <strong>Users Relation (3NF)</strong>
-                                <span class="badge-pk">PK: user_id</span>
-                            </div>
-                            <ul class="schema-cols-list">
-                                <li><code>user_id</code> <span class="col-type">VARCHAR(36)</span> <span class="col-cst">PRIMARY KEY, NOT NULL</span></li>
-                                <li><code>email</code> <span class="col-type">VARCHAR(255)</span> <span class="col-cst">UNIQUE, DOMAIN(email)</span></li>
-                                <li><code>name</code> <span class="col-type">VARCHAR(100)</span> <span class="col-cst">NOT NULL</span></li>
-                                <li><code>age</code> <span class="col-type">INT</span> <span class="col-cst">CHECK (age BETWEEN 1 AND 120)</span></li>
-                                <li><code>bmi</code> <span class="col-type">DECIMAL(4,1)</span> <span class="col-cst">CHECK (bmi &gt; 0)</span></li>
-                                <li><code>chronic_condition</code> <span class="col-type">VARCHAR(50)</span> <span class="col-cst">DOMAIN(diabetic, hypertensive...)</span></li>
-                            </ul>
-                        </div>
-
-                        <div class="schema-table-card">
-                            <div class="schema-table-header">
-                                <i class="fas fa-table"></i>
-                                <strong>Products Relation (3NF)</strong>
-                                <span class="badge-pk">PK: barcode</span>
-                            </div>
-                            <ul class="schema-cols-list">
-                                <li><code>barcode</code> <span class="col-type">VARCHAR(14)</span> <span class="col-cst">PRIMARY KEY, NOT NULL</span></li>
-                                <li><code>name</code> <span class="col-type">VARCHAR(255)</span> <span class="col-cst">NOT NULL</span></li>
-                                <li><code>brand</code> <span class="col-type">VARCHAR(100)</span> <span class="col-cst">NOT NULL</span></li>
-                                <li><code>category</code> <span class="col-type">VARCHAR(50)</span> <span class="col-cst">NOT NULL</span></li>
-                                <li><code>sugar_g</code> <span class="col-type">DECIMAL(5,2)</span> <span class="col-cst">CHECK (sugar_g &gt;= 0)</span></li>
-                                <li><code>sodium_mg</code> <span class="col-type">INT</span> <span class="col-cst">CHECK (sodium_mg &gt;= 0)</span></li>
-                                <li><code>calories_kcal</code> <span class="col-type">INT</span> <span class="col-cst">CHECK (calories_kcal &gt;= 0)</span></li>
-                            </ul>
-                        </div>
-
-                        <div class="schema-table-card">
-                            <div class="schema-table-header">
-                                <i class="fas fa-table"></i>
-                                <strong>MealLogs Relation (3NF)</strong>
-                                <span class="badge-pk">PK: log_id</span>
-                            </div>
-                            <ul class="schema-cols-list">
-                                <li><code>log_id</code> <span class="col-type">VARCHAR(36)</span> <span class="col-cst">PRIMARY KEY, NOT NULL</span></li>
-                                <li><code>user_id</code> <span class="col-type">VARCHAR(36)</span> <span class="col-cst">FK ➔ Users(user_id) [ON DELETE CASCADE]</span></li>
-                                <li><code>product_barcode</code> <span class="col-type">VARCHAR(14)</span> <span class="col-cst">FK ➔ Products(barcode) [ON DELETE RESTRICT]</span></li>
-                                <li><code>logged_at</code> <span class="col-type">TIMESTAMP</span> <span class="col-cst">NOT NULL DEFAULT NOW()</span></li>
-                                <li><code>servings</code> <span class="col-type">DECIMAL(3,1)</span> <span class="col-cst">CHECK (servings &gt; 0)</span></li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <!-- Interactive Constraints & Anomalies Trigger Box -->
-                    <div class="anomaly-lab-box">
-                        <div class="anomaly-lab-header">
-                            <i class="fas fa-flask-vial"></i>
-                            <div>
-                                <h4>Interactive Constraint Violation &amp; Anomaly Simulator</h4>
-                                <p>Click any test case to execute the operation against the relational constraint engine and inspect the database error, safety impact, and normalization remedy.</p>
-                            </div>
-                        </div>
-
-                        <div class="anomaly-buttons-grid">
-                            <button class="btn-anomaly-test" onclick="runRelationalTest('domain_violation')">
-                                <i class="fas fa-ban"></i>
-                                <div>
-                                    <strong>Domain Constraint Violation</strong>
-                                    <span>Negative sugar value &amp; out-of-range age</span>
-                                </div>
-                            </button>
-                            <button class="btn-anomaly-test" onclick="runRelationalTest('entity_integrity_violation')">
-                                <i class="fas fa-key"></i>
-                                <div>
-                                    <strong>Entity Integrity Violation</strong>
-                                    <span>Duplicate Primary Key &amp; NULL user_id</span>
-                                </div>
-                            </button>
-                            <button class="btn-anomaly-test" onclick="runRelationalTest('referential_integrity_violation')">
-                                <i class="fas fa-link-slash"></i>
-                                <div>
-                                    <strong>Referential Integrity Violation</strong>
-                                    <span>Orphaned Foreign Key parent record not found</span>
-                                </div>
-                            </button>
-                            <button class="btn-anomaly-test" onclick="runRelationalTest('insertion_anomaly')">
-                                <i class="fas fa-triangle-exclamation"></i>
-                                <div>
-                                    <strong>Insertion Anomaly (Denormalized)</strong>
-                                    <span>Cannot insert new product without dummy patient</span>
-                                </div>
-                            </button>
-                            <button class="btn-anomaly-test" onclick="runRelationalTest('deletion_anomaly')">
-                                <i class="fas fa-trash-can"></i>
-                                <div>
-                                    <strong>Deletion Anomaly (Side-Effect Loss)</strong>
-                                    <span>Deleting patient wipes product toxicology catalog</span>
-                                </div>
-                            </button>
-                            <button class="btn-anomaly-test" onclick="runRelationalTest('modification_anomaly')">
-                                <i class="fas fa-clone"></i>
-                                <div>
-                                    <strong>Modification Anomaly (Inconsistency)</strong>
-                                    <span>Redundant updates lead to contradicting records</span>
-                                </div>
-                            </button>
-                        </div>
-
-                        <!-- Live Anomaly Output Console -->
-                        <div class="anomaly-console" id="anomalyConsole">
-                            <div class="console-placeholder">
-                                <i class="fas fa-terminal"></i> Click any test case above to trigger real-time constraint validation and SQL execution telemetry.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ========================================================
-                     UNIT II PANE: PARALLEL DATABASES
-                     ======================================================== -->
-                <div class="adbms-pane" id="adbmsPaneUnit2">
-                    <div class="pane-header-box">
-                        <div class="pane-header-left">
-                            <span class="unit-badge">UNIT-II</span>
+                            <span class="unit-badge">Parallel Databases</span>
                             <h3>Parallel Databases: Architectures, Evaluation &amp; Query Optimization</h3>
                             <p>Examines <strong>Shared Memory</strong>, <strong>Shared Disk</strong>, <strong>Shared Nothing</strong>, and <strong>Hierarchical</strong> architectures with real-time <strong>Intra-Query Map-Reduce</strong>, <strong>Inter-Query Multi-User Concurrency</strong>, and <strong>Parallel Hash-Join</strong> benchmarks.</p>
                         </div>
@@ -1637,141 +1484,9 @@
                             <p>Each node owns private CPU, RAM, and Disk. Scales horizontally to thousands of nodes via high-speed interconnect.</p>
                         </div>
                     </div>
-                </div>
+                
 
-                <!-- ========================================================
-                     UNIT III PANE: DISTRIBUTED DATABASES & 2PC
-                     ======================================================== -->
-                <div class="adbms-pane" id="adbmsPaneUnit3">
-                    <div class="pane-header-box">
-                        <div class="pane-header-left">
-                            <span class="unit-badge">UNIT-III</span>
-                            <h3>Distributed Databases: Fragmentation, 2-Phase Commit (2PC) &amp; Deadlocks</h3>
-                            <p>Demonstrates <strong>Horizontal &amp; Vertical Fragmentation</strong>, <strong>Distributed Semi-Join Network Reduction</strong>, <strong>Two-Phase Commit (2PC)</strong> with fault injection, and <strong>Distributed Wait-For Graph (WFG)</strong> deadlock detection.</p>
-                        </div>
-                    </div>
-
-                    <!-- 2-Phase Commit (2PC) Interactive Simulator -->
-                    <div class="twopc-simulator-card">
-                        <div class="twopc-header">
-                            <div class="twopc-title">
-                                <i class="fas fa-shield-halved"></i>
-                                <div>
-                                    <h4>Two-Phase Commit (2PC) Distributed Transaction Protocol</h4>
-                                    <p>Simulates atomic distributed writes across 3 independent health database nodes with automatic commit or rollback upon failure.</p>
-                                </div>
-                            </div>
-                            <div class="twopc-controls">
-                                <label for="twopcFailureNode">Injected Fault Condition:</label>
-                                <select id="twopcFailureNode">
-                                    <option value="none" selected>All Nodes Healthy ➔ GLOBAL_COMMIT</option>
-                                    <option value="node1">Node 1 (Patient Ledger) Offline ➔ GLOBAL_ABORT</option>
-                                    <option value="node2">Node 2 (Clinical Catalog) Timeout ➔ GLOBAL_ABORT</option>
-                                    <option value="node3">Node 3 (Audit Compliance) Crash ➔ GLOBAL_ABORT</option>
-                                </select>
-                                <button class="btn-primary btn-sm" onclick="run2PcSimulation()">
-                                    <i class="fas fa-play"></i> Execute Distributed 2PC
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- 2PC Visual Flow Sequence -->
-                        <div class="twopc-flow-container" id="twopcFlowContainer">
-                            <div class="twopc-node coordinator-node">
-                                <div class="node-badge"><i class="fas fa-crown"></i> Coordinator</div>
-                                <h5>NutriScan Master Engine</h5>
-                                <span class="node-state" id="twopcCoordState">IDLE</span>
-                            </div>
-
-                            <div class="twopc-participants-row">
-                                <div class="twopc-node participant-node" id="twopcNode1">
-                                    <div class="node-badge">Participant 1</div>
-                                    <h5>Patient Health Ledger</h5>
-                                    <span class="node-state" id="twopcNode1State">READY</span>
-                                </div>
-                                <div class="twopc-node participant-node" id="twopcNode2">
-                                    <div class="node-badge">Participant 2</div>
-                                    <h5>Clinical Product Catalog</h5>
-                                    <span class="node-state" id="twopcNode2State">READY</span>
-                                </div>
-                                <div class="twopc-node participant-node" id="twopcNode3">
-                                    <div class="node-badge">Participant 3</div>
-                                    <h5>Medical Audit Compliance</h5>
-                                    <span class="node-state" id="twopcNode3State">READY</span>
-                                </div>
-                            </div>
-
-                            <div class="twopc-log-box" id="twopcLogBox">
-                                <div class="log-title"><i class="fas fa-book-journal-whills"></i> Distributed Transaction WAL (Write-Ahead Log):</div>
-                                <div class="log-lines" id="twopcLogLines">
-                                    <span>Ready to initiate distributed atomic transaction...</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Distributed Fragmentation & Semi-Join Grid -->
-                    <div class="distributed-features-grid">
-                        <!-- Horizontal & Vertical Fragmentation -->
-                        <div class="dist-card">
-                            <div class="dist-card-header">
-                                <i class="fas fa-arrows-split-up-and-left"></i>
-                                <h4>Horizontal &amp; Vertical Fragmentation</h4>
-                            </div>
-                            <p>Partitions data across distributed nodes with location transparency:</p>
-                            <div class="frag-test-row">
-                                <select id="fragRegionSelect" onchange="runFragmentationTest()">
-                                    <option value="APAC">Asia-Pacific Region (Node-Tokyo-01)</option>
-                                    <option value="NA">North America Region (Node-Virginia-02)</option>
-                                    <option value="EU">European Union Region (Node-Frankfurt-03)</option>
-                                </select>
-                            </div>
-                            <div class="frag-output-box" id="fragOutputBox">
-                                <div class="frag-item"><strong>Horizontal:</strong> Routes to regional fragment by patient origin.</div>
-                                <div class="frag-item"><strong>Vertical:</strong> Splits <code>Core Catalog</code> (edge cache) and <code>Clinical Toxicology</code> (medical node).</div>
-                            </div>
-                        </div>
-
-                        <!-- Distributed Semi-Join Network Reduction -->
-                        <div class="dist-card">
-                            <div class="dist-card-header">
-                                <i class="fas fa-compress"></i>
-                                <h4>Distributed Semi-Join Network Reduction ($R \ltimes S$)</h4>
-                            </div>
-                            <p>Joins remote tables across high-latency WAN networks without shipping entire tables.</p>
-                            <div class="semijoin-comparison">
-                                <div class="sj-col traditional">
-                                    <span class="sj-label">Full Table Shipping:</span>
-                                    <strong>50.0 MB Transmitted</strong>
-                                    <span>Latency: 1,250 ms</span>
-                                </div>
-                                <div class="sj-col optimized">
-                                    <span class="sj-label">Semi-Join ($R \ltimes S$):</span>
-                                    <strong>72.0 KB Transmitted</strong>
-                                    <span>Latency: 45 ms (<strong style="color:#10b981;">99.8% Saved</strong>)</span>
-                                </div>
-                            </div>
-                            <button class="btn-secondary btn-sm btn-full" style="margin-top:0.75rem;" onclick="runSemiJoinSimulation()">
-                                <i class="fas fa-calculator"></i> Simulate Semi-Join Reduction
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ========================================================
-                     UNIT IV PANE: NOSQL DATABASES & CASSANDRA
-                     ======================================================== -->
-                <div class="adbms-pane" id="adbmsPaneUnit4">
-                    <div class="pane-header-box">
-                        <div class="pane-header-left">
-                            <span class="unit-badge">UNIT-IV</span>
-                            <h3>NoSQL Databases, MongoDB Aggregation Pipelines &amp; Apache Cassandra</h3>
-                            <p>Explores <strong>CAP Theorem</strong>, <strong>ACID vs BASE</strong>, multi-stage <strong>MongoDB Aggregation Pipelines</strong> (<code>$match</code>, <code>$unwind</code>, <code>$group</code>, <code>$project</code>, <code>$sort</code>), and <strong>Apache Cassandra</strong> wide-column time-series models.</p>
-                        </div>
-                    </div>
-
-                    <!-- LIVE MONGODB DATABASE INSPECTOR & REAL-TIME COLLECTIONS EXPLORER -->
-                    <div class="db-inspector-card" id="dbInspectorCard">
+<div class="db-inspector-card" id="dbInspectorCard">
                         <div class="db-inspector-header">
                             <div class="db-inspector-title">
                                 <i class="fas fa-server" style="color: #10b981;"></i>
@@ -1835,386 +1550,11 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- MongoDB Aggregation Pipeline Runner -->
-                    <div class="nosql-pipeline-card">
-                        <div class="pipeline-header">
-                            <div class="pipeline-title">
-                                <i class="fas fa-leaf" style="color:#10b981;"></i>
-                                <div>
-                                    <h4>MongoDB Aggregation Pipeline Runner</h4>
-                                    <p>Live 5-stage document aggregation pipeline scanning 5,000+ food products to identify hazardous ingredient co-occurrences.</p>
-                                </div>
-                            </div>
-                            <div class="pipeline-controls">
-                                <div class="p-control">
-                                    <label>Min Sugar Threshold:</label>
-                                    <select id="mongoMinSugar">
-                                        <option value="5">5g Sugar (Strict)</option>
-                                        <option value="10" selected>10g Sugar (Standard)</option>
-                                        <option value="18">18g Sugar (Severe)</option>
-                                    </select>
-                                </div>
-                                <button class="btn-primary btn-sm" onclick="runMongoPipeline()">
-                                    <i class="fas fa-play"></i> Execute Pipeline
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- 5 Visual Stages -->
-                        <div class="pipeline-stages-flow">
-                            <div class="stage-step">
-                                <div class="step-num">$match</div>
-                                <span>Filter Sugar &ge; Min</span>
-                            </div>
-                            <div class="stage-arrow"><i class="fas fa-arrow-right"></i></div>
-                            <div class="stage-step">
-                                <div class="step-num">$unwind</div>
-                                <span>Flatten Ingredients</span>
-                            </div>
-                            <div class="stage-arrow"><i class="fas fa-arrow-right"></i></div>
-                            <div class="stage-step">
-                                <div class="step-num">$group</div>
-                                <span>Aggregate by Name</span>
-                            </div>
-                            <div class="stage-arrow"><i class="fas fa-arrow-right"></i></div>
-                            <div class="stage-step">
-                                <div class="step-num">$project</div>
-                                <span>Compute Risk Index</span>
-                            </div>
-                            <div class="stage-arrow"><i class="fas fa-arrow-right"></i></div>
-                            <div class="stage-step">
-                                <div class="step-num">$sort</div>
-                                <span>Rank Top Hazards</span>
-                            </div>
-                        </div>
-
-                        <!-- Aggregation Output Table -->
-                        <div class="pipeline-table-wrapper" id="mongoPipelineOutput">
-                            <div class="table-placeholder">
-                                <i class="fas fa-spinner fa-spin"></i> Loading default MongoDB aggregation pipeline...
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Apache Cassandra Wide-Column Store Preview -->
-                    <div class="cassandra-wide-card">
-                        <div class="cassandra-header">
-                            <i class="fas fa-database" style="color:#38bdf8;"></i>
-                            <div>
-                                <h4>Apache Cassandra Wide-Column Store (CQL &amp; SSTables)</h4>
-                                <p>High-throughput telemetry ingestion for continuous glucose monitors (CGM) and real-time barcode intake streams.</p>
-                            </div>
-                        </div>
-
-                        <div class="cql-schema-box">
-                            <div class="cql-header">
-                                <span><i class="fas fa-terminal"></i> Cassandra Query Language (CQL) Schema</span>
-                                <span class="keyspace-tag">Keyspace: nutriscan_telemetry</span>
-                            </div>
-                            <pre class="cql-code"><code>CREATE KEYSPACE nutriscan_telemetry 
-WITH replication = {'class': 'NetworkTopologyStrategy', 'dc1': 3};
-
-CREATE TABLE nutriscan_telemetry.user_glycemic_intake_stream (
-    user_id uuid,
-    scan_date date,
-    scan_timestamp timestamp,
-    barcode text,
-    product_name text,
-    sugar_grams decimal,
-    sodium_mg int,
-    hazard_flags set&lt;text&gt;,
-    PRIMARY KEY ((user_id), scan_date, scan_timestamp)
-) WITH CLUSTERING ORDER BY (scan_date ASC, scan_timestamp DESC);</code></pre>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ========================================================
-                     UNIT V PANE: DATA WAREHOUSING & OLAP
-                     ======================================================== -->
-                <div class="adbms-pane" id="adbmsPaneUnit5">
-                    <div class="pane-header-box">
-                        <div class="pane-header-left">
-                            <span class="unit-badge">UNIT-V</span>
-                            <h3>Data Warehousing, Star/Snowflake Schemas &amp; Multidimensional OLAP Cubes</h3>
-                            <p>Interactive 3D nutritional data cube demonstrating core OLAP operations: <strong>Slice</strong>, <strong>Dice</strong>, <strong>Roll-Up</strong>, <strong>Drill-Down</strong>, and <strong>Pivot</strong> alongside <strong>Materialized View</strong> query acceleration.</p>
-                        </div>
-                    </div>
-
-                    <!-- Interactive OLAP Cube Operations Navigator -->
-                    <div class="olap-navigator-card">
-                        <div class="olap-header">
-                            <div class="olap-title">
-                                <i class="fas fa-cubes"></i>
-                                <div>
-                                    <h4>Multidimensional OLAP Nutritional Cube Explorer</h4>
-                                    <p>Dimensions: <code>[Time: Quarters]</code> &times; <code>[Product: Categories]</code> &times; <code>[Risk: Clinical Hazard Level]</code></p>
-                                </div>
-                            </div>
-                            <div class="olap-actions-strip">
-                                <button class="btn-olap-op active" id="btnOlapSlice" onclick="triggerOlapOp('slice')">
-                                    <i class="fas fa-scissors"></i> Slice (Q3)
-                                </button>
-                                <button class="btn-olap-op" id="btnOlapDice" onclick="triggerOlapOp('dice')">
-                                    <i class="fas fa-dice-d6"></i> Dice (Snacks + Hazard)
-                                </button>
-                                <button class="btn-olap-op" id="btnOlapRollup" onclick="triggerOlapOp('rollup')">
-                                    <i class="fas fa-arrow-up-right-dots"></i> Roll-Up (Annual)
-                                </button>
-                                <button class="btn-olap-op" id="btnOlapDrilldown" onclick="triggerOlapOp('drilldown')">
-                                    <i class="fas fa-sitemap"></i> Drill-Down (Subcats)
-                                </button>
-                                <button class="btn-olap-op" id="btnOlapPivot" onclick="triggerOlapOp('pivot')">
-                                    <i class="fas fa-arrows-rotate"></i> Pivot (Rotate)
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Dynamic OLAP Result Table -->
-                        <div class="olap-table-container" id="olapTableContainer">
-                            <!-- Populated dynamically via JS -->
-                        </div>
-                    </div>
-
-                    <!-- Star vs Snowflake Schema & Materialized View Row -->
-                    <div class="dwh-schema-row">
-                        <div class="dwh-schema-card">
-                            <div class="dwh-card-header">
-                                <i class="fas fa-star" style="color:#f59e0b;"></i>
-                                <h4>Star vs Snowflake Schema Model</h4>
-                            </div>
-                            <p><strong>Fact Table:</strong> <code>Fact_Nutritional_Scans</code> (Measures: sugar, sodium, calories, glycemic load).</p>
-                            <div class="schema-comparison-badges">
-                                <div class="sc-badge">
-                                    <strong>Star Schema:</strong> Denormalized single-hop dimensions (<code>Dim_Time</code>, <code>Dim_Product</code>, <code>Dim_User</code>, <code>Dim_Store</code>) for fastest read performance.
-                                </div>
-                                <div class="sc-badge">
-                                    <strong>Snowflake Schema:</strong> Normalized hierarchies (<code>Dim_Product ➔ Dim_Subcat ➔ Dim_Category</code>) eliminating dimensional redundancy.
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="dwh-schema-card">
-                            <div class="dwh-card-header">
-                                <i class="fas fa-bolt" style="color:#10b981;"></i>
-                                <h4>Materialized Views vs Virtual Views</h4>
-                            </div>
-                            <p>Benchmark on 1,000,000 row population clinical scan aggregation:</p>
-                            <div class="mv-benchmark-row">
-                                <div class="mv-stat">
-                                    <span>Virtual SQL View:</span>
-                                    <strong>142.5 ms</strong>
-                                </div>
-                                <div class="mv-stat success">
-                                    <span>Materialized View:</span>
-                                    <strong>1.8 ms</strong>
-                                </div>
-                                <div class="mv-stat highlight">
-                                    <span>Acceleration:</span>
-                                    <strong>79.1x Faster</strong>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ========================================================
-                     UNIT VI PANE: DATA MINING & KDD PROCESS
-                     ======================================================== -->
-                <div class="adbms-pane" id="adbmsPaneUnit6">
-                    <div class="pane-header-box">
-                        <div class="pane-header-left">
-                            <span class="unit-badge">UNIT-VI</span>
-                            <h3>Data Mining, Apriori Association Rules, K-Means Clustering &amp; KDD</h3>
-                            <p>Executes the <strong>KDD 7-Step Life Cycle</strong> with live <strong>Apriori Association Rule Mining</strong> (Support, Confidence, Lift for food additives) and <strong>K-Means Unsupervised Clustering</strong> on multi-dimensional nutritional feature vectors.</p>
-                        </div>
-                    </div>
-
-                    <!-- Apriori Association Rule Miner Card -->
-                    <div class="mining-card-box">
-                        <div class="mining-header">
-                            <div class="mining-title">
-                                <i class="fas fa-network-wired" style="color:#ec4899;"></i>
-                                <div>
-                                    <h4>Apriori Association Rule Mining (Additives &amp; Sweeteners)</h4>
-                                    <p>Finds co-occurrence rules $A \Rightarrow B$ with mathematical metrics: $\text{Support} \ge s$, $\text{Confidence} \ge c$, and $\text{Lift} &gt; 1.0$.</p>
-                                </div>
-                            </div>
-                            <div class="mining-controls">
-                                <div class="m-control">
-                                    <label>Min Support: <strong id="valMinSupport">10%</strong></label>
-                                    <input type="range" id="rangeMinSupport" min="5" max="30" value="10" step="5" oninput="$('valMinSupport').textContent = this.value + '%'">
-                                </div>
-                                <div class="m-control">
-                                    <label>Min Confidence: <strong id="valMinConfidence">60%</strong></label>
-                                    <input type="range" id="rangeMinConfidence" min="40" max="90" value="60" step="10" oninput="$('valMinConfidence').textContent = this.value + '%'">
-                                </div>
-                                <button class="btn-primary btn-sm" onclick="runAprioriMining()">
-                                    <i class="fas fa-magnifying-glass-chart"></i> Mine Rules
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Discovered Rules Table -->
-                        <div class="mining-table-wrapper" id="aprioriRulesOutput">
-                            <div class="table-placeholder">
-                                <i class="fas fa-spinner fa-spin"></i> Mining frequent itemsets with Apriori...
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- K-Means Nutritional Cluster Visualizer -->
-                    <div class="kmeans-card-box">
-                        <div class="kmeans-header">
-                            <div class="kmeans-title">
-                                <i class="fas fa-chart-scatter" style="color:#a855f7;"></i>
-                                <div>
-                                    <h4>K-Means Unsupervised Clustering (Food Vectors)</h4>
-                                    <p>Clusters foods into $K$ distinct nutritional groups by 4D vectors: <code>[Sugar, Sodium, SaturatedFat, Calories]</code>.</p>
-                                </div>
-                            </div>
-                            <div class="kmeans-controls">
-                                <label>Clusters ($K$):</label>
-                                <select id="kmeansKSelect">
-                                    <option value="2">K = 2 Clusters</option>
-                                    <option value="3">K = 3 Clusters</option>
-                                    <option value="4" selected>K = 4 Clusters</option>
-                                    <option value="5">K = 5 Clusters</option>
-                                </select>
-                                <button class="btn-primary btn-sm" onclick="runKMeansClustering()">
-                                    <i class="fas fa-play"></i> Run Clustering
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- 2D Canvas Scatter Plot Visualizer -->
-                        <div class="scatter-plot-wrapper">
-                            <canvas id="kmeansCanvas" width="700" height="340"></canvas>
-                            <div class="canvas-legend" id="kmeansLegend">
-                                <!-- Populated dynamically via JS -->
-                            </div>
-                        </div>
-
-                        <!-- Cluster Summary Cards -->
-                        <div class="cluster-summary-grid" id="kmeansClusterSummary">
-                            <!-- Populated dynamically via JS -->
-                        </div>
-                    </div>
-
-                    <!-- KDD 7-Step Process Visualizer -->
-                    <div class="kdd-stepper-box">
-                        <div class="kdd-header">
-                            <i class="fas fa-diagram-next"></i>
-                            <div>
-                                <h4>KDD (Knowledge Discovery in Databases) 7-Step Life Cycle</h4>
-                                <p>How raw barcode telemetry transforms into verified clinical dietary knowledge.</p>
-                            </div>
-                        </div>
-                        <div class="kdd-steps-grid">
-                            <div class="kdd-step-card">
-                                <span class="step-badge">1</span>
-                                <h5>Data Cleaning</h5>
-                                <p>Noise removal, negative nutrient rejection, and missing dietary fiber imputation.</p>
-                            </div>
-                            <div class="kdd-step-card">
-                                <span class="step-badge">2</span>
-                                <h5>Data Integration</h5>
-                                <p>Merging Open Food Facts, MongoDB local store, and Food-Info clinical registries.</p>
-                            </div>
-                            <div class="kdd-step-card">
-                                <span class="step-badge">3</span>
-                                <h5>Data Selection</h5>
-                                <p>Extracting target chronic markers: Sugar, Sodium, Saturated Fat, NOVA class.</p>
-                            </div>
-                            <div class="kdd-step-card">
-                                <span class="step-badge">4</span>
-                                <h5>Transformation</h5>
-                                <p>Discretization into Low/Med/High glycemic bins and min-max vector normalization.</p>
-                            </div>
-                            <div class="kdd-step-card">
-                                <span class="step-badge">5</span>
-                                <h5>Data Mining</h5>
-                                <p>Executing Apriori rule mining for additives and K-Means for dietary clusters.</p>
-                            </div>
-                            <div class="kdd-step-card">
-                                <span class="step-badge">6</span>
-                                <h5>Pattern Evaluation</h5>
-                                <p>Filtering rules with Lift &gt; 1.5 and clinical confidence &ge; 70%.</p>
-                            </div>
-                            <div class="kdd-step-card">
-                                <span class="step-badge">7</span>
-                                <h5>Knowledge Display</h5>
-                                <p>Rendering actionable patient warnings, scatter charts, and safe food swaps.</p>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- ADBMS Syllabus Mapping Modal -->
-        <div class="modal-overlay" id="adbmsSyllabusModal" style="display:none;" onclick="if(event.target===this)closeAdbmsSyllabusModal()">
-            <div class="modal-content modal-lg">
-                <div class="modal-header">
-                    <div class="modal-title-wrap">
-                        <i class="fas fa-graduation-cap"></i>
-                        <div>
-                            <h3>ADBMS Syllabus Coverage Matrix</h3>
-                            <p>Direct mapping of syllabus units to NutriScan AI production implementations.</p>
-                        </div>
-                    </div>
-                    <button class="modal-close" onclick="closeAdbmsSyllabusModal()">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <div class="syllabus-table-wrapper">
-                        <table class="syllabus-matrix-table">
-                            <thead>
-                                <tr>
-                                    <th>Unit</th>
-                                    <th>Syllabus Topics Covered</th>
-                                    <th>NutriScan AI Implementation &amp; Interactive Tools</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td><strong>UNIT-I</strong></td>
-                                    <td>Relational model concepts, Relational constraints, Relational database schemas, Update operations &amp; anomalies (Insertion, Deletion, Modification), Constraint violations &amp; remedies.</td>
-                                    <td><span class="badge-tech">Active</span> Relational Schema Validator, Domain/Entity/Referential checks, Live Anomaly Simulator with 3NF normalization fixes.</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>UNIT-II</strong></td>
-                                    <td>Parallel Databases, Architectures (Shared Memory, Shared Disk, Shared Nothing, Hierarchical), Parallel query evaluation, Parallelizing operations (Parallel Scan, Parallel Hash-Join vs Nested-Loop), Query optimizations.</td>
-                                    <td><span class="badge-tech">Active</span> Intra-Query Map-Reduce scan, Inter-Query concurrent connection pool, Parallel Hash-Join benchmark ($O((M+N)/P)$), Gantt timeline.</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>UNIT-III</strong></td>
-                                    <td>Distributed Databases, Architectures, Storing data (Horizontal &amp; Vertical Fragmentation, Replication), Distributed catalog, Distributed Semi-Join ($R \ltimes S$), Two-Phase Commit (2PC) protocol, Distributed Concurrency &amp; Deadlocks (WFG).</td>
-                                    <td><span class="badge-tech">Active</span> Regional Horizontal Routing, Vertical Attribute decomposition, 99.8% WAN Semi-Join reduction, Fault-Injected 2PC Simulator, Local/Global WFG visualizer.</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>UNIT-IV</strong></td>
-                                    <td>NoSQL Databases, SQL vs NoSQL, CAP Theorem &amp; ACID vs BASE, MongoDB (Collections, Documents, Aggregation operators <code>$match</code>, <code>$unwind</code>, <code>$group</code>, <code>$project</code>, <code>$sort</code>, MapReduce), Apache Cassandra (Keyspaces, Column Families, Wide-Column, CQL).</td>
-                                    <td><span class="badge-tech">Active</span> Live 5-stage MongoDB Ingredient Aggregation Pipeline, Apache Cassandra CQL telemetry schema, Wide-Row time-series model.</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>UNIT-V</strong></td>
-                                    <td>Data Warehousing, Architecture &amp; ETL, Inmon/Kimball 4 Properties, Star and Snowflake schemas, Multidimensional OLAP Cube Operations (Roll-up, Drill-down, Slice, Dice, Pivot), Decision Support Systems (DSS), Materialized Views vs Virtual Views.</td>
-                                    <td><span class="badge-tech">Active</span> Interactive 3D OLAP Cube Explorer with live operations, Clinical Star &amp; Snowflake Schema models, 79x Materialized View query benchmark.</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>UNIT-VI</strong></td>
-                                    <td>Data Mining, KDD 7-Step Process, Predictive &amp; Descriptive Algorithms, Apriori Association Rule Mining (Support, Confidence, Lift), K-Means Clustering on nutritional vectors, Clinical Nutrition Applications.</td>
-                                    <td><span class="badge-tech">Active</span> Live Apriori Rule Miner with adjustable thresholds, K-Means Canvas Scatter Plot visualizer, Interactive KDD 7-step pipeline.</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 5. HEALTH PROFILE SECTION -->
+<!-- 5. HEALTH PROFILE SECTION -->
         <section id="profile" class="section">
             <div class="profile-container">
                 <div class="section-heading-center">
@@ -2231,8 +1571,8 @@ CREATE TABLE nutriscan_telemetry.user_glycemic_intake_stream (
                         <span id="profileDbSyncText">Active sync with MongoDB Atlas Cloud Cluster</span>
                     </div>
                     <div id="profileDbSyncAction">
-                        <button type="button" class="btn-secondary btn-sm" onclick="navigateTo('adbms'); switchAdbmsTab('unit4');">
-                            <i class="fas fa-eye"></i> View in ADBMS Studio
+                        <button type="button" class="btn-secondary btn-sm" onclick="navigateTo('adbms');">
+                            <i class="fas fa-eye"></i> View in Database Explorer
                         </button>
                     </div>
                 </div>
@@ -2420,7 +1760,7 @@ CREATE TABLE nutriscan_telemetry.user_glycemic_intake_stream (
                         <button class="btn-secondary" onclick="scrollToProfileForm()">
                             <i class="fas fa-pen-to-square"></i> Edit Biometrics Below
                         </button>
-                        <button class="btn-outline" onclick="navigateTo('adbms'); switchAdbmsTab('unit4');">
+                        <button class="btn-outline" onclick="navigateTo('adbms');">
                             <i class="fas fa-database"></i> View in MongoDB Atlas Inspector
                         </button>
                     </div>
