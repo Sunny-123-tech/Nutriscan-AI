@@ -428,9 +428,7 @@
       }
 
       // Automatically refresh database entries so new user appears immediately
-      if (typeof refreshDatabaseInspector === 'function') {
-        refreshDatabaseInspector();
-      }
+      
     } catch (err) {
       showAuthError(err.message || 'Authentication failed. Please try again.');
     } finally {
@@ -458,9 +456,7 @@
     updateAuthUI();
     showToast('Signed out successfully.');
 
-    if (typeof refreshDatabaseInspector === 'function') {
-      refreshDatabaseInspector();
-    }
+    
   };
 
   function updateAuthUI() {
@@ -478,21 +474,34 @@
       }
     }
 
-    // Update Profile Page Database Sync Indicator
-    const syncIndicator = $('profileDbSyncIndicator');
-    const syncText = $('profileDbSyncText');
-    const syncAction = $('profileDbSyncAction');
-    if (syncIndicator && syncText && syncAction) {
+    const form = $('healthProfileForm');
+    if (form) form.reset();
+    updateDashPreview();
+    if (typeof renderHealthPlanDisplay === 'function') {
+      renderHealthPlanDisplay(null);
+    }
+    updateAuthUI();
+    showToast('Signed out successfully.');
+
+    
+  };
+
+  function updateAuthUI() {
+    const c = $('authActions');
+    if (c) {
       if (currentUser && authToken) {
-        syncIndicator.className = 'db-sync-indicator';
-        syncText.innerHTML = `<strong>Synced with MongoDB Atlas</strong> &bull; User: ${escHtml(currentUser.name)} (<code>${escHtml(currentUser.email)}</code>)`;
-        syncAction.innerHTML = `<button type="button" class="btn-secondary btn-sm" onclick="navigateTo('adbms');"><i class="fas fa-database"></i> View in Database Explorer</button>`;
+        c.innerHTML = `
+          <div class="user-pill-badge" onclick="navigateTo('profile')" title="View Health Profile" style="cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 14px;border-radius:20px;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);">
+            <i class="fas fa-user-circle" style="color:#10b981;"></i>
+            <span style="font-weight:600;font-size:0.85rem;">${escHtml(currentUser.name.split(' ')[0])}</span>
+          </div>
+          <button class="btn-secondary btn-sm" onclick="logout()" title="Sign out" style="padding:6px 12px;border-radius:8px;"><i class="fas fa-right-from-bracket"></i></button>`;
       } else {
-        syncIndicator.className = 'db-sync-indicator guest';
-        syncText.innerHTML = `<strong>Guest Mode (Local Only)</strong> &bull; Sign in or create an account to permanently sync your health profile to MongoDB Atlas.`;
-        syncAction.innerHTML = `<button type="button" class="btn-primary btn-sm" onclick="openAuthModal('register')"><i class="fas fa-user-plus"></i> Sign Up / In</button>`;
+        c.innerHTML = `<button class="btn-auth" onclick="openAuthModal('login')"><i class="fas fa-user"></i> <span>Sign In</span></button>`;
       }
     }
+
+
   }
 
   /* ═══════════════════════════════════════════════════════════
@@ -603,7 +612,7 @@
       try {
         const res = await api('/health-profile', { method: 'POST', body: profile });
         if (res && res.profile) persistProfile(res.profile);
-        if (typeof refreshDatabaseInspector === 'function') refreshDatabaseInspector();
+        
       } catch (e) {
         console.warn('Could not sync profile to MongoDB:', e.message);
       }
@@ -2548,9 +2557,7 @@
       parallelismInitialized = true;
       selectBenchmarkWorkload('intra');
     }
-    if (typeof refreshDatabaseInspector === 'function') {
-      refreshDatabaseInspector();
-    }
+    
   };
 
   window.switchAdbmsTab = function (unitId) {
@@ -2568,716 +2575,6 @@
     if (modal) modal.style.display = 'none';
   };
 
-  // ---------------- UNIT 1: RELATIONAL & ANOMALIES ----------------
-  window.runRelationalTest = async function (testCase) {
-    const consoleBox = $('anomalyConsole');
-    if (consoleBox) {
-      consoleBox.innerHTML = '<span style="color:#64748b;"><i class="fas fa-spinner fa-spin"></i> Executing relational constraint engine test...</span>';
-    }
-
-    try {
-      const data = await api('/adbms/unit1/test-constraint', {
-        method: 'POST',
-        body: { testCase }
-      });
-
-      if (!consoleBox) return;
-
-      const isViolation = !data.success;
-      const statusColor = isViolation ? '#ef4444' : '#10b981';
-      const statusIcon = isViolation ? 'fa-circle-xmark' : 'fa-circle-check';
-
-      consoleBox.innerHTML = `
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;border-bottom:1px solid #1e293b;padding-bottom:0.5rem;flex-wrap:wrap;gap:0.5rem;">
-          <div>
-            <strong style="color:${statusColor};font-size:0.9rem;"><i class="fas ${statusIcon}"></i> ${escHtml(data.testCase)}</strong>
-            <span style="color:#94a3b8;font-size:0.75rem;margin-left:0.5rem;">[Execution: ${data.executionDurationMs} ms]</span>
-          </div>
-          <span style="background:${isViolation ? 'rgba(239,68,68,0.2)' : 'rgba(16,185,129,0.2)'};color:${statusColor};padding:2px 8px;border-radius:4px;font-size:0.72rem;font-weight:700;">
-            ${escHtml(data.violationType || 'CONSTRAINT ENFORCED')}
-          </span>
-        </div>
-
-        <div style="margin-bottom:0.5rem;">
-          <span style="color:#94a3b8;font-size:0.78rem;">SQL Statement / Operation:</span><br>
-          <code style="color:#38bdf8;background:rgba(255,255,255,0.03);padding:4px 8px;border-radius:4px;display:block;margin-top:2px;font-size:0.78rem;">${escHtml(data.sqlEquivalent || data.action || '--')}</code>
-        </div>
-
-        ${data.errorMessage ? `
-          <div style="margin-bottom:0.5rem;">
-            <span style="color:#f87171;font-size:0.78rem;">Database Engine Error:</span><br>
-            <span style="color:#fca5a5;font-size:0.80rem;">${escHtml(data.errorMessage)}</span>
-          </div>
-        ` : ''}
-
-        ${data.explanation ? `
-          <div style="margin-bottom:0.5rem;">
-            <span style="color:#fbbf24;font-size:0.78rem;">Anomaly Manifestation:</span><br>
-            <span style="color:#fde68a;font-size:0.80rem;">${escHtml(data.explanation)}</span>
-          </div>
-        ` : ''}
-
-        <div style="margin-bottom:0.5rem;">
-          <span style="color:#e2e8f0;font-size:0.78rem;">Clinical Health &amp; Patient Safety Impact:</span><br>
-          <span style="color:#cbd5e1;font-size:0.80rem;">${escHtml(data.clinicalSafetyImpact || 'Guarantees medical data integrity.')}</span>
-        </div>
-
-        <div style="margin-top:0.6rem;padding-top:0.5rem;border-top:1px dashed #334155;">
-          <span style="color:#34d399;font-weight:600;font-size:0.78rem;"><i class="fas fa-wrench"></i> Normalization &amp; DBMS Remedy:</span><br>
-          <span style="color:#a7f3d0;font-size:0.80rem;">${escHtml(data.remedy || 'Enforce 3NF schema decomposition.')}</span>
-        </div>
-      `;
-
-      showToast(`Unit I: Executed ${data.testCase}`);
-    } catch (err) {
-      if (consoleBox) consoleBox.innerHTML = `<span style="color:#ef4444;"><i class="fas fa-triangle-exclamation"></i> Error: ${escHtml(err.message)}</span>`;
-    }
-  };
-
-  // ---------------- UNIT 2: PARALLEL HASH-JOIN ----------------
-  window.runParallelHashJoin = async function () {
-    try {
-      const data = await api('/adbms/unit2/hash-join', {
-        method: 'POST',
-        body: { datasetSize: 25000, partitions: 4 }
-      });
-
-      const cmp = data.comparisons || {};
-      if ($('hjNestedTime')) $('hjNestedTime').textContent = `${cmp.serialNestedLoopJoinMs} ms`;
-      if ($('hjSerialHashTime')) $('hjSerialHashTime').textContent = `${cmp.serialHashJoinMs} ms`;
-      if ($('hjParallelHashTime')) $('hjParallelHashTime').textContent = `${cmp.parallelHashJoinMs} ms`;
-      if ($('hjSpeedup')) $('hjSpeedup').textContent = cmp.speedupOverNestedLoop || '33.2x Faster';
-
-      showToast(`⚡ Parallel Hash-Join executed: ${cmp.speedupOverNestedLoop}`);
-    } catch (err) {
-      showToast('Parallel hash-join error: ' + err.message, true);
-    }
-  };
-
-  // ---------------- UNIT 3: DISTRIBUTED & 2PC ----------------
-  window.run2PcSimulation = async function () {
-    const failNode = $('twopcFailureNode')?.value || 'none';
-    const logBox = $('twopcLogLines');
-    const coordState = $('twopcCoordState');
-    const n1 = $('twopcNode1State');
-    const n2 = $('twopcNode2State');
-    const n3 = $('twopcNode3State');
-
-    if (coordState) coordState.textContent = 'PREPARING (Phase 1)';
-    if (logBox) logBox.innerHTML = '<span style="color:#38bdf8;"><i class="fas fa-spinner fa-spin"></i> Broadcasting PREPARE message to distributed participants...</span>';
-
-    try {
-      const data = await api('/adbms/unit3/simulate-2pc', {
-        method: 'POST',
-        body: { failNode }
-      });
-
-      const isCommit = data.globalDecision === 'GLOBAL_COMMIT';
-
-      // Update coordinator
-      if (coordState) {
-        coordState.textContent = data.globalDecision;
-        coordState.className = `node-state ${isCommit ? 'committed' : 'aborted'}`;
-      }
-
-      // Update participants
-      const participants = data.participants || [];
-      const nodes = [n1, n2, n3];
-      participants.forEach((p, idx) => {
-        if (nodes[idx]) {
-          nodes[idx].textContent = isCommit ? 'COMMITTED' : p.vote === 'VOTE_COMMIT' ? 'ROLLED BACK' : 'ABORTED';
-          nodes[idx].className = `node-state ${isCommit ? 'committed' : 'aborted'}`;
-        }
-      });
-
-      // Stream logs
-      if (logBox) {
-        const allLogs = [...(data.phase1?.logs || []), ...(data.phase2?.logs || [])];
-        logBox.innerHTML = allLogs.map(l => `
-          <div>
-            <span style="color:#64748b;">[+${l.timeOffsetMs}ms]</span>
-            <strong style="color:#38bdf8;">${escHtml(l.actor)}:</strong>
-            <span>${escHtml(l.message)}</span>
-          </div>
-        `).join('');
-      }
-
-      showToast(`2PC Decision: ${data.globalDecision}`);
-    } catch (err) {
-      if (logBox) logBox.innerHTML = `<span style="color:#ef4444;">2PC error: ${escHtml(err.message)}</span>`;
-    }
-  };
-
-  window.runFragmentationTest = async function () {
-    const region = $('fragRegionSelect')?.value || 'APAC';
-    const box = $('fragOutputBox');
-    try {
-      const data = await api('/adbms/unit3/fragmentation', {
-        method: 'POST',
-        body: { region, barcode: '8901030383701' }
-      });
-
-      if (box && data.routingDecision) {
-        const r = data.routingDecision;
-        box.innerHTML = `
-          <div class="frag-item"><strong>Horizontal Route:</strong> <code>${escHtml(r.selectedHorizontalFragment)}</code> on <code>${escHtml(r.selectedPhysicalNode)}</code> (${r.expectedRoundTripLatency})</div>
-          <div class="frag-item"><strong>Predicate:</strong> <code>${escHtml(r.queryPredicate)}</code></div>
-          <div class="frag-item"><strong>Vertical Edge Split:</strong> <code>${escHtml(data.verticalDecomposition.edgeQuery)}</code></div>
-          <div class="frag-item"><strong>Vertical Clinical Split:</strong> <code>${escHtml(data.verticalDecomposition.clinicalQuery)}</code></div>
-        `;
-      }
-    } catch (err) {
-      if (box) box.innerHTML = `<span style="color:#ef4444;">Fragmentation error: ${escHtml(err.message)}</span>`;
-    }
-  };
-
-  window.runSemiJoinSimulation = async function () {
-    try {
-      const data = await api('/adbms/unit3/semi-join', {
-        method: 'POST',
-        body: { allergyCount: 5 }
-      });
-      const opt = data.semiJoinOptimized || {};
-      showToast(`Distributed Semi-Join: ${opt.bandwidthSaved} bandwidth saved! (${opt.speedup})`);
-    } catch (err) {
-      showToast('Semi-join error: ' + err.message, true);
-    }
-  };
-
-  // ---------------- UNIT 4: NOSQL & MONGODB PIPELINES ----------------
-  window.runMongoPipeline = async function () {
-    const minSugar = parseFloat($('mongoMinSugar')?.value || '10');
-    const container = $('mongoPipelineOutput');
-    if (container) {
-      container.innerHTML = '<div class="table-placeholder"><i class="fas fa-spinner fa-spin"></i> Executing MongoDB 5-stage aggregation pipeline...</div>';
-    }
-
-    try {
-      const data = await api('/adbms/unit4/mongo-pipeline', {
-        method: 'POST',
-        body: { minSugar, category: 'all' }
-      });
-
-      if (!container) return;
-
-      const results = data.results || [];
-      if (results.length === 0) {
-        container.innerHTML = '<div class="table-placeholder">No matching records found for this threshold.</div>';
-        return;
-      }
-
-      container.innerHTML = `
-        <table class="pipeline-data-table">
-          <thead>
-            <tr>
-              <th>Ingredient (_id)</th>
-              <th>Type</th>
-              <th>High-Sugar Foods Count</th>
-              <th>Avg Sugar (g)</th>
-              <th>Avg Sodium (mg)</th>
-              <th>Clinical Risk Index</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${results.map(r => `
-              <tr>
-                <td><strong>${escHtml(r.ingredient)}</strong></td>
-                <td><span class="badge-tech">${escHtml(r.type || 'additive')}</span></td>
-                <td>${r.appearanceInHighRiskProducts.toLocaleString()}</td>
-                <td>${r.avgProductSugar}g</td>
-                <td>${r.avgProductSodium}mg</td>
-                <td><strong style="color:${r.clinicalRiskIndex > 30 ? '#ef4444' : '#f59e0b'};">${r.clinicalRiskIndex}</strong></td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-        <div style="font-size:0.75rem;color:#94a3b8;margin-top:0.5rem;text-align:right;">
-          MongoDB Execution Duration: <strong>${data.executionTimeMs} ms</strong>
-        </div>
-      `;
-      showToast(`MongoDB Pipeline complete (${data.executionTimeMs} ms)`);
-    } catch (err) {
-      if (container) container.innerHTML = `<span style="color:#ef4444;">Pipeline error: ${escHtml(err.message)}</span>`;
-    }
-  };
-
-  // ---------------- LIVE DATABASE INSPECTOR (MONGODB ATLAS) ----------------
-  let currentDbCollection = 'users';
-  let cachedDbEntries = [];
-
-  window.refreshDatabaseInspector = async function () {
-    if (!$('dbEntriesTableWrapper')) return;
-    const badge = $('dbStatusBadge');
-    const badgeText = $('dbStatusText');
-    const clusterHost = $('dbClusterHost');
-    if (badgeText) badgeText.textContent = 'Syncing MongoDB...';
-
-    try {
-      const overview = await api('/database/overview');
-      if (badgeText) {
-        badgeText.textContent = overview.isAtlas
-          ? `MongoDB Atlas Live (${overview.pingMs}ms)`
-          : `Local Database Store (${overview.engine})`;
-      }
-      if (badge) {
-        badge.className = 'db-status-badge ' + (overview.isAtlas ? 'connected' : 'local');
-      }
-      if (clusterHost) {
-        clusterHost.textContent = overview.clusterHost + ' / ' + overview.databaseName;
-      }
-
-      if ($('countColUsers')) $('countColUsers').textContent = overview.counts?.users ?? 0;
-      if ($('countColProfiles')) $('countColProfiles').textContent = overview.counts?.profiles ?? 0;
-      if ($('countColProducts')) $('countColProducts').textContent = overview.counts?.products ?? 0;
-      if ($('countColMealLogs')) $('countColMealLogs').textContent = overview.counts?.mealLogs ?? 0;
-
-      await loadDbCollectionEntries(currentDbCollection);
-    } catch (err) {
-      if (badgeText) badgeText.textContent = 'DB Offline: ' + err.message;
-      if (badge) badge.className = 'db-status-badge error';
-      const wrapper = $('dbEntriesTableWrapper');
-      if (wrapper) {
-        wrapper.innerHTML = `<div class="table-error"><i class="fas fa-triangle-exclamation"></i> Could not reach database: ${escHtml(err.message)}</div>`;
-      }
-    }
-  };
-
-  window.switchDbCollection = async function (colName) {
-    currentDbCollection = colName;
-    ['users', 'profiles', 'products', 'mealLogs'].forEach(c => {
-      const tab = $('tabCol' + capitalize(c));
-      if (tab) tab.classList.toggle('active', c === colName);
-    });
-    const searchInput = $('dbSearchInput');
-    if (searchInput) searchInput.value = '';
-    await loadDbCollectionEntries(colName);
-  };
-
-  async function loadDbCollectionEntries(colName) {
-    const wrapper = $('dbEntriesTableWrapper');
-    if (!wrapper) return;
-    wrapper.innerHTML = `<div class="table-placeholder"><i class="fas fa-spinner fa-spin"></i> Fetching records from MongoDB '${escHtml(colName)}'...</div>`;
-
-    try {
-      const data = await api(`/database/collection/${colName}?limit=100`);
-      cachedDbEntries = data.documents || [];
-      renderDbEntriesTable(colName, cachedDbEntries);
-      if ($('dbCollectionInfo')) {
-        $('dbCollectionInfo').textContent = `Showing ${cachedDbEntries.length} of ${data.totalCount} documents in '${colName}'`;
-      }
-    } catch (err) {
-      wrapper.innerHTML = `<div class="table-error"><i class="fas fa-circle-exclamation"></i> Failed to retrieve collection '${colName}': ${escHtml(err.message)}</div>`;
-    }
-  }
-
-  function renderDbEntriesTable(colName, docs) {
-    const wrapper = $('dbEntriesTableWrapper');
-    if (!wrapper) return;
-
-    if (!docs || docs.length === 0) {
-      wrapper.innerHTML = `<div class="table-empty"><i class="fas fa-database"></i> No records currently stored in collection <strong>${escHtml(colName)}</strong>. New registrations will automatically appear here.</div>`;
-      return;
-    }
-
-    let html = '<div class="table-responsive"><table class="pipeline-data-table db-inspect-table"><thead><tr>';
-
-    if (colName === 'users') {
-      html += '<th>#</th><th>User ID</th><th>Full Name</th><th>Email Address</th><th>Registered Date</th><th>Actions</th>';
-    } else if (colName === 'profiles') {
-      html += '<th>#</th><th>User Name / ID</th><th>Height / Weight</th><th>BMI &amp; Category</th><th>Daily Plan</th><th>Conditions &amp; Allergies</th><th>Last Updated</th>';
-    } else if (colName === 'products') {
-      html += '<th>#</th><th>Barcode</th><th>Product Name</th><th>Brand</th><th>Category</th><th>Processing Level</th><th>Calories / Sugar</th>';
-    } else if (colName === 'mealLogs') {
-      html += '<th>#</th><th>Log ID</th><th>User ID</th><th>Product</th><th>Quantity</th><th>Logged At</th>';
-    }
-
-    html += '</tr></thead><tbody>';
-
-    docs.forEach((doc, idx) => {
-      html += '<tr>';
-      html += `<td style="font-weight:600;color:var(--text-muted);">${idx + 1}</td>`;
-
-      if (colName === 'users') {
-        const isCurrent = currentUser && (currentUser.id === doc.id || currentUser.email === doc.email);
-        const dateStr = doc.createdAt ? new Date(doc.createdAt).toLocaleString() : 'N/A';
-        html += `<td><code>${escHtml(doc.id || doc._id || '')}</code></td>`;
-        html += `<td><strong>${escHtml(doc.name || 'Anonymous')}</strong> ${isCurrent ? '<span class="badge-tag-accent">You</span>' : ''}</td>`;
-        html += `<td><code>${escHtml(doc.email || '')}</code></td>`;
-        html += `<td>${dateStr}</td>`;
-        html += `<td><button class="btn-secondary btn-xs" onclick='viewRawDoc(${JSON.stringify(JSON.stringify(doc))})'><i class="fas fa-code"></i> JSON</button></td>`;
-      } else if (colName === 'profiles') {
-        const height = doc.height ? doc.height + ' cm' : '--';
-        const weight = doc.weight ? doc.weight + ' kg' : '--';
-        const bmi = doc.personalPlan?.bmi || '--';
-        const bmiCat = doc.personalPlan?.bmiCategory || 'N/A';
-        const calories = doc.personalPlan?.tdee ? doc.personalPlan.tdee + ' kcal' : '--';
-        const sugar = doc.personalPlan?.maxSugarGrams ? doc.personalPlan.maxSugarGrams + 'g sugar' : '--';
-        const conditions = [];
-        if (doc.diabetes) conditions.push('Diabetes');
-        if (doc.hypertension) conditions.push('High BP');
-        if (doc.heartDisease) conditions.push('Heart');
-        if (doc.highCholesterol) conditions.push('Cholesterol');
-        if (doc.kidneyDisease) conditions.push('Kidney');
-        if (doc.fattyLiver) conditions.push('Fatty Liver');
-        if (doc.otherConditions) conditions.push(doc.otherConditions);
-        const condBadges = conditions.length > 0 ? conditions.map(c => `<span class="badge-tag-warning">${escHtml(c)}</span>`).join(' ') : '<span class="badge-tag-safe">None Reported</span>';
-        const dateStr = doc.updatedAt ? new Date(doc.updatedAt).toLocaleString() : (doc.createdAt ? new Date(doc.createdAt).toLocaleString() : 'N/A');
-
-        html += `<td><strong>${escHtml(doc.name || doc.userId || '')}</strong></td>`;
-        html += `<td>${height} / ${weight}</td>`;
-        html += `<td><strong>${bmi}</strong> <span class="badge-tag-neutral">${escHtml(bmiCat)}</span></td>`;
-        html += `<td>${calories} &bull; ${sugar}</td>`;
-        html += `<td><div style="display:flex;flex-wrap:wrap;gap:4px;">${condBadges}</div></td>`;
-        html += `<td>${dateStr}</td>`;
-      } else if (colName === 'products') {
-        const energy = doc.nutritionPer100g?.energy ? doc.nutritionPer100g.energy + ' kcal' : '--';
-        const sugar = doc.nutritionPer100g?.sugars !== undefined ? doc.nutritionPer100g.sugars + 'g' : '--';
-        html += `<td><code>${escHtml(doc.barcode || '')}</code></td>`;
-        html += `<td><strong>${escHtml(doc.name || '')}</strong></td>`;
-        html += `<td>${escHtml(doc.brand || 'N/A')}</td>`;
-        html += `<td>${escHtml(doc.category || 'N/A')}</td>`;
-        html += `<td><span class="badge-tag-${doc.processingLevel === 'ultra-processed' ? 'danger' : 'safe'}">${escHtml(doc.processingLevel || 'unknown')}</span></td>`;
-        html += `<td>${energy} &bull; ${sugar} sugar</td>`;
-      } else if (colName === 'mealLogs') {
-        const prodName = doc.product?.name || doc.productName || 'Meal Entry';
-        const qty = doc.quantityGrams ? doc.quantityGrams + 'g' : (doc.quantity || '--');
-        const dateStr = doc.date ? new Date(doc.date).toLocaleString() : (doc.createdAt ? new Date(doc.createdAt).toLocaleString() : 'N/A');
-        html += `<td><code>${escHtml(doc.id || doc._id || '')}</code></td>`;
-        html += `<td><code>${escHtml(doc.userId || '')}</code></td>`;
-        html += `<td><strong>${escHtml(prodName)}</strong></td>`;
-        html += `<td>${qty}</td>`;
-        html += `<td>${dateStr}</td>`;
-      }
-
-      html += '</tr>';
-    });
-
-    html += '</tbody></table></div>';
-    wrapper.innerHTML = html;
-  }
-
-  window.filterCurrentDbEntries = function () {
-    const query = ($('dbSearchInput')?.value || '').trim().toLowerCase();
-    if (!query) {
-      renderDbEntriesTable(currentDbCollection, cachedDbEntries);
-      return;
-    }
-    const filtered = cachedDbEntries.filter(doc => JSON.stringify(doc).toLowerCase().includes(query));
-    renderDbEntriesTable(currentDbCollection, filtered);
-  };
-
-  window.viewRawDoc = function (jsonStr) {
-    try {
-      const obj = typeof jsonStr === 'string' ? JSON.parse(jsonStr) : jsonStr;
-      alert('MongoDB BSON Document:\n\n' + JSON.stringify(obj, null, 2));
-    } catch {
-      alert(jsonStr);
-    }
-  };
-
-  // ---------------- UNIT 5: DATA WAREHOUSE & OLAP ----------------
-  window.triggerOlapOp = async function (operation) {
-    document.querySelectorAll('.btn-olap-op').forEach(b => b.classList.remove('active'));
-    const btn = $(`btnOlap${operation.charAt(0).toUpperCase() + operation.slice(1)}`);
-    if (btn) btn.classList.add('active');
-
-    const container = $('olapTableContainer');
-    if (container) {
-      container.innerHTML = '<div class="table-placeholder"><i class="fas fa-spinner fa-spin"></i> Computing multidimensional OLAP aggregation...</div>';
-    }
-
-    try {
-      const data = await api('/adbms/unit5/olap', {
-        method: 'POST',
-        body: { operation }
-      });
-
-      if (!container) return;
-
-      let html = `<div style="font-size:0.82rem;color:#f59e0b;margin-bottom:0.6rem;font-weight:600;"><i class="fas fa-circle-info"></i> ${escHtml(data.description)}</div>`;
-
-      if (operation === 'slice') {
-        const rows = data.resulting2DTable || [];
-        html += `
-          <table class="pipeline-data-table">
-            <thead>
-              <tr><th>Quarter</th><th>Category</th><th>Risk Level</th><th>Total Scans</th><th>Avg Sugar (g)</th><th>Avg Sodium (mg)</th></tr>
-            </thead>
-            <tbody>
-              ${rows.slice(0, 8).map(r => `
-                <tr>
-                  <td>${r.quarter}</td>
-                  <td><strong>${escHtml(r.category)}</strong></td>
-                  <td><span class="${r.riskLevel.includes('Hazard') ? 'badge-danger' : 'badge-safe'}">${escHtml(r.riskLevel)}</span></td>
-                  <td>${r.scanCount.toLocaleString()}</td>
-                  <td>${r.avgSugarG}g</td>
-                  <td>${r.avgSodiumMg}mg</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        `;
-      } else if (operation === 'dice') {
-        const rows = data.resultingSubCubeCells || [];
-        html += `
-          <table class="pipeline-data-table">
-            <thead>
-              <tr><th>Quarter</th><th>Category</th><th>Risk Level</th><th>Scans</th><th>Calories</th></tr>
-            </thead>
-            <tbody>
-              ${rows.map(r => `
-                <tr>
-                  <td>${r.quarter}</td>
-                  <td>${escHtml(r.category)}</td>
-                  <td><strong style="color:#ef4444;">${escHtml(r.riskLevel)}</strong></td>
-                  <td>${r.scanCount.toLocaleString()}</td>
-                  <td>${r.totalCalories.toLocaleString()} kcal</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        `;
-      } else if (operation === 'rollup') {
-        const rows = data.rolledUpData || [];
-        html += `
-          <table class="pipeline-data-table">
-            <thead>
-              <tr><th>Consolidated Category</th><th>Annual Scans</th><th>Weighted Avg Sugar</th><th>Weighted Avg Sodium</th></tr>
-            </thead>
-            <tbody>
-              ${rows.map(r => `
-                <tr>
-                  <td><strong>${escHtml(r.category)}</strong></td>
-                  <td>${r.annualScans.toLocaleString()}</td>
-                  <td>${r.weightedAvgSugar}g</td>
-                  <td>${r.weightedAvgSodium}mg</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        `;
-      } else if (operation === 'drilldown') {
-        const rows = data.granularBreakdown || [];
-        html += `
-          <table class="pipeline-data-table">
-            <thead>
-              <tr><th>Subcategory</th><th>Avg Sugar</th><th>Avg Sodium</th><th>Clinical Hazard Ratio</th></tr>
-            </thead>
-            <tbody>
-              ${rows.map(r => `
-                <tr>
-                  <td><strong>${escHtml(r.subcategory)}</strong></td>
-                  <td>${r.avgSugar}g</td>
-                  <td>${r.avgSodium}mg</td>
-                  <td><span class="badge-tech">${escHtml(r.hazardRatio)}</span></td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        `;
-      } else if (operation === 'pivot') {
-        const matrix = data.pivotedMatrix || [];
-        html += `
-          <table class="pipeline-data-table">
-            <thead>
-              <tr><th>Category (Rows) \\ Quarter (Cols)</th><th>Q1</th><th>Q2</th><th>Q3</th><th>Q4</th></tr>
-            </thead>
-            <tbody>
-              ${matrix.map(m => `
-                <tr>
-                  <td><strong>${escHtml(m.category)}</strong></td>
-                  <td>${(m.Q1 || 0).toLocaleString()}</td>
-                  <td>${(m.Q2 || 0).toLocaleString()}</td>
-                  <td>${(m.Q3 || 0).toLocaleString()}</td>
-                  <td>${(m.Q4 || 0).toLocaleString()}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        `;
-      }
-
-      container.innerHTML = html;
-      showToast(`OLAP ${data.operation} computed (${data.executionDurationMs} ms)`);
-    } catch (err) {
-      if (container) container.innerHTML = `<span style="color:#ef4444;">OLAP error: ${escHtml(err.message)}</span>`;
-    }
-  };
-
-  // ---------------- UNIT 6: DATA MINING (APRIORI & K-MEANS) ----------------
-  window.runAprioriMining = async function () {
-    const minSupport = (parseFloat($('rangeMinSupport')?.value || '10')) / 100;
-    const minConfidence = (parseFloat($('rangeMinConfidence')?.value || '60')) / 100;
-    const container = $('aprioriRulesOutput');
-
-    if (container) {
-      container.innerHTML = '<div class="table-placeholder"><i class="fas fa-spinner fa-spin"></i> Mining frequent additive patterns with Apriori...</div>';
-    }
-
-    try {
-      const data = await api('/adbms/unit6/apriori', {
-        method: 'POST',
-        body: { minSupport, minConfidence }
-      });
-
-      if (!container) return;
-
-      const rules = data.rules || [];
-      if (rules.length === 0) {
-        container.innerHTML = '<div class="table-placeholder">No rules found satisfying the minimum support/confidence thresholds. Lower thresholds to discover weaker associations.</div>';
-        return;
-      }
-
-      container.innerHTML = `
-        <table class="pipeline-data-table">
-          <thead>
-            <tr>
-              <th>Association Rule (Antecedent ➔ Consequent)</th>
-              <th>Support</th>
-              <th>Confidence</th>
-              <th>Lift Metric</th>
-              <th>Clinical Additive Interpretation</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${rules.map(r => `
-              <tr>
-                <td><code style="color:#f472b6;font-size:0.80rem;">${escHtml(r.ruleText)}</code></td>
-                <td><span class="badge-tech">${r.supportPercent}</span></td>
-                <td><strong>${r.confidencePercent}</strong></td>
-                <td><strong style="color:${r.lift > 2.0 ? '#10b981' : '#38bdf8'};">${r.lift}x</strong></td>
-                <td style="font-size:0.75rem;color:#cbd5e1;">${escHtml(r.clinicalInsight)}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-        <div style="font-size:0.75rem;color:#94a3b8;margin-top:0.5rem;text-align:right;">
-          Apriori Mining Duration: <strong>${data.executionDurationMs} ms</strong>
-        </div>
-      `;
-      showToast(`Apriori Mining: Discovered ${rules.length} frequent association rules`);
-    } catch (err) {
-      if (container) container.innerHTML = `<span style="color:#ef4444;">Mining error: ${escHtml(err.message)}</span>`;
-    }
-  };
-
-  window.runKMeansClustering = async function () {
-    const k = parseInt($('kmeansKSelect')?.value || '4', 10);
-    const canvas = $('kmeansCanvas');
-    const legend = $('kmeansLegend');
-    const summary = $('kmeansClusterSummary');
-
-    try {
-      const data = await api('/adbms/unit6/kmeans', {
-        method: 'POST',
-        body: { k }
-      });
-
-      const clusters = data.clusters || [];
-      const clusterColors = ['#10b981', '#ef4444', '#f59e0b', '#8b5cf6', '#38bdf8', '#ec4899'];
-
-      // Render Canvas Scatter Plot (Sugar on X-axis: 0 to 45g, Sodium on Y-axis: 0 to 900mg)
-      if (canvas && canvas.getContext) {
-        const ctx = canvas.getContext('2d');
-        const W = canvas.width;
-        const H = canvas.height;
-        ctx.clearRect(0, 0, W, H);
-
-        // Draw axes & grid
-        ctx.strokeStyle = '#1e293b';
-        ctx.lineWidth = 1;
-        for (let x = 60; x < W - 20; x += 100) {
-          ctx.beginPath(); ctx.moveTo(x, 20); ctx.lineTo(x, H - 40); ctx.stroke();
-        }
-        for (let y = 30; y < H - 40; y += 60) {
-          ctx.beginPath(); ctx.moveTo(60, y); ctx.lineTo(W - 20, y); ctx.stroke();
-        }
-
-        // Axis labels
-        ctx.fillStyle = '#64748b';
-        ctx.font = '11px sans-serif';
-        ctx.fillText('0g Sugar', 55, H - 20);
-        ctx.fillText('20g Sugar', W / 2 - 25, H - 20);
-        ctx.fillText('45g Sugar (High Glycemic ➔)', W - 160, H - 20);
-
-        ctx.save();
-        ctx.translate(20, H / 2 + 40);
-        ctx.rotate(-Math.PI / 2);
-        ctx.fillText('Sodium (0mg ➔ 900mg High BP)', 0, 0);
-        ctx.restore();
-
-        // Plot cluster centroids & members
-        clusters.forEach((cl, cIdx) => {
-          const color = clusterColors[cIdx % clusterColors.length];
-          const c = cl.centroid;
-
-          // Scaled centroid coords
-          const cx = 70 + (c.avgSugarG / 45) * (W - 130);
-          const cy = (H - 50) - (c.avgSodiumMg / 900) * (H - 90);
-
-          // Draw simulated scatter points around centroid
-          ctx.fillStyle = color;
-          for (let p = 0; p < Math.min(25, cl.itemCount); p++) {
-            const spreadX = (Math.sin(p * 2.3 + cIdx) * 35);
-            const spreadY = (Math.cos(p * 1.7 + cIdx) * 28);
-            const px = Math.max(70, Math.min(W - 30, cx + spreadX));
-            const py = Math.max(30, Math.min(H - 55, cy + spreadY));
-
-            ctx.beginPath();
-            ctx.arc(px, py, 3.5, 0, Math.PI * 2);
-            ctx.globalAlpha = 0.65;
-            ctx.fill();
-          }
-
-          // Draw Centroid with Concentric Rings
-          ctx.globalAlpha = 1.0;
-          ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = 2.5;
-          ctx.fillStyle = color;
-          ctx.beginPath();
-          ctx.arc(cx, cy, 9, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.stroke();
-
-          // Centroid Label
-          ctx.fillStyle = '#ffffff';
-          ctx.font = 'bold 11px sans-serif';
-          ctx.fillText(`C${cl.clusterIndex}`, cx - 6, cy - 13);
-        });
-      }
-
-      // Render Legend
-      if (legend) {
-        legend.innerHTML = clusters.map((cl, cIdx) => {
-          const color = clusterColors[cIdx % clusterColors.length];
-          return `
-            <div class="legend-item">
-              <span class="legend-dot" style="background:${color};"></span>
-              <span><strong>Cluster ${cl.clusterIndex}:</strong> ${escHtml(cl.clinicalProfileName)} (${cl.itemCount} foods)</span>
-            </div>
-          `;
-        }).join('');
-      }
-
-      // Render Summary Cards
-      if (summary) {
-        summary.innerHTML = clusters.map((cl, cIdx) => {
-          const color = clusterColors[cIdx % clusterColors.length];
-          return `
-            <div class="cluster-pill-card" style="border-top: 3px solid ${color};">
-              <h5>Cluster #${cl.clusterIndex}: ${escHtml(cl.clinicalProfileName)}</h5>
-              <span>Centroid: <strong>${cl.centroid.avgSugarG}g sugar</strong>, <strong>${cl.centroid.avgSodiumMg}mg sodium</strong>, ${cl.centroid.avgCaloriesKcal} kcal</span>
-              <span style="color:#94a3b8;font-size:0.70rem;">Items: ${cl.itemCount.toLocaleString()} foods clustered</span>
-            </div>
-          `;
-        }).join('');
-      }
-
-      showToast(`K-Means: Partitioned ${data.totalRecordsClustered} items into ${clusters.length} clusters`);
-    } catch (err) {
-      showToast('K-Means error: ' + err.message, true);
-    }
-  };
 
   /* ═══════════════════════════════════════════════════════════
      20. INITIALIZATION
@@ -3319,9 +2616,7 @@
     }
 
     // Auto-fetch database status and entries overview
-    if (typeof refreshDatabaseInspector === 'function') {
-      refreshDatabaseInspector();
-    }
+    
 
     // Load trends if already on that page
     if (document.querySelector('#trends.active')) loadTrends();
