@@ -2713,6 +2713,175 @@ textarea:focus {
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 1.75rem;
+  flex-direction: column;
+  position: relative;
+}
+
+.auth-icon-badge {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.auth-header h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.35rem;
+}
+
+.auth-header p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.auth-error {
+  display: none;
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-top: 0.75rem;
+  line-height: 1.4;
+  width: 100%;
+}
+
+.auth-error.active {
+  display: block;
+  animation: fadeInModal 0.2s ease-in-out;
+}
+
+/* Onboarding Step Indicators */
+.onboarding-steps {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  padding: 0.5rem 0.25rem;
+}
+
+.step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.step-item .step-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bg-surface-elevated, #1f2937);
+  border: 2px solid var(--border-glass, #374151);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.step-item.active {
+  color: #10b981;
+}
+
+.step-item.active .step-num {
+  background: #10b981;
+  color: #ffffff;
+  border-color: #10b981;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+}
+
+.step-line {
+  flex: 1;
+  height: 2px;
+  background: var(--border-glass, #374151);
+  margin: 0 0.5rem;
+  margin-bottom: 1.25rem;
+  transition: background 0.2s ease;
+}
+
+.step-line.active {
+  background: #10b981;
+}
+
+.auth-step-panel {
+  display: none;
+}
+
+.auth-step-panel.active {
+  display: block;
+  animation: fadeInModal 0.2s ease-in-out;
+}
+
+.auth-step-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.auth-step-actions.multi-buttons {
+  justify-content: space-between;
+}
+
+.auth-step-actions .btn-full {
+  width: 100%;
+}
+
+.auth-switch {
+  text-align: center;
+  margin-top: 1.25rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.auth-switch button {
+  background: none;
+  border: none;
+  color: #10b981;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0 4px;
+}
+
+.auth-switch button:hover {
+  color: #059669;
+}
+
+/* User pill badge in navbar */
+.user-pill-badge {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.user-pill-badge:hover {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: #10b981;
+  transform: translateY(-1px);
 }
 
 .modal-close {

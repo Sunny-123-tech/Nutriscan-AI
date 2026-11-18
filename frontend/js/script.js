@@ -246,6 +246,7 @@
     $('onboardingSteps').style.display = isReg ? 'flex' : 'none';
     $('authSubmit').style.display = isReg ? 'none' : 'block';
     $('btnNextStep1').style.display = isReg ? 'block' : 'none';
+    if ($('btnQuickRegister')) $('btnQuickRegister').style.display = isReg ? 'block' : 'none';
     $('authSwitch').innerHTML = isReg
       ? 'Already have an account? <button type="button" onclick="openAuthModal(\'login\')">Sign in</button>'
       : 'New to NutriScan? <button type="button" onclick="openAuthModal(\'register\')">Create account</button>';
@@ -355,7 +356,9 @@
     const password = $('authPassword')?.value;
     const body = { email, password };
 
-    const submitBtn = authMode === 'register' ? $('btnCompleteRegister') : $('authSubmit');
+    const submitBtn = authMode === 'register'
+      ? (onboardingStep === 3 ? $('btnCompleteRegister') : ($('btnQuickRegister') || $('btnNextStep1')))
+      : $('authSubmit');
     const origBtnHtml = submitBtn ? submitBtn.innerHTML : '';
     if (submitBtn) {
       submitBtn.disabled = true;
@@ -365,10 +368,10 @@
     if (authMode === 'register') {
       body.name = $('authName')?.value.trim();
 
-      // Collect complete health profile from onboarding step 2 and step 3
-      const height = Number($('regHeight')?.value) || null;
-      const weight = Number($('regWeight')?.value) || null;
-      const age = Number($('regAge')?.value) || null;
+      // Collect complete health profile from onboarding step 2 and step 3 (with smart baseline defaults)
+      const height = Number($('regHeight')?.value) || 170;
+      const weight = Number($('regWeight')?.value) || 68;
+      const age = Number($('regAge')?.value) || 28;
       const gender = $('regGender')?.value || 'male';
       const activityLevel = $('regActivity')?.value || 'moderate';
       const primaryGoal = $('regGoal')?.value || 'maintenance';
@@ -463,45 +466,17 @@
     const c = $('authActions');
     if (c) {
       if (currentUser && authToken) {
+        const displayName = (currentUser.name || 'User').split(' ')[0];
         c.innerHTML = `
           <div class="user-pill-badge" onclick="navigateTo('profile')" title="View Health Profile" style="cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 14px;border-radius:20px;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);">
             <i class="fas fa-user-circle" style="color:#10b981;"></i>
-            <span style="font-weight:600;font-size:0.85rem;">${escHtml(currentUser.name.split(' ')[0])}</span>
+            <span style="font-weight:600;font-size:0.85rem;">${escHtml(displayName)}</span>
           </div>
-          <button class="btn-secondary btn-sm" onclick="logout()" title="Sign out" style="padding:6px 12px;border-radius:8px;"><i class="fas fa-right-from-bracket"></i></button>`;
+          <button class="btn-secondary btn-sm" onclick="logout()" title="Sign out" style="padding:6px 12px;border-radius:8px;"><i class="fas fa-right-from-bracket"></i> Sign out</button>`;
       } else {
         c.innerHTML = `<button class="btn-auth" onclick="openAuthModal('login')"><i class="fas fa-user"></i> <span>Sign In</span></button>`;
       }
     }
-
-    const form = $('healthProfileForm');
-    if (form) form.reset();
-    updateDashPreview();
-    if (typeof renderHealthPlanDisplay === 'function') {
-      renderHealthPlanDisplay(null);
-    }
-    updateAuthUI();
-    showToast('Signed out successfully.');
-
-    
-  };
-
-  function updateAuthUI() {
-    const c = $('authActions');
-    if (c) {
-      if (currentUser && authToken) {
-        c.innerHTML = `
-          <div class="user-pill-badge" onclick="navigateTo('profile')" title="View Health Profile" style="cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 14px;border-radius:20px;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);">
-            <i class="fas fa-user-circle" style="color:#10b981;"></i>
-            <span style="font-weight:600;font-size:0.85rem;">${escHtml(currentUser.name.split(' ')[0])}</span>
-          </div>
-          <button class="btn-secondary btn-sm" onclick="logout()" title="Sign out" style="padding:6px 12px;border-radius:8px;"><i class="fas fa-right-from-bracket"></i></button>`;
-      } else {
-        c.innerHTML = `<button class="btn-auth" onclick="openAuthModal('login')"><i class="fas fa-user"></i> <span>Sign In</span></button>`;
-      }
-    }
-
-
   }
 
   /* ═══════════════════════════════════════════════════════════

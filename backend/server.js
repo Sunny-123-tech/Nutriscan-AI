@@ -2323,7 +2323,7 @@ function buildProductFromManualInput(body, barcode) {
 }
 
 app.post('/api/auth/register', async (req, res) => {
-    const name = String(req.body.name || '').trim();
+    const name = String(req.body.name || req.body.fullName || req.body.username || '').trim();
     const email = String(req.body.email || '').trim().toLowerCase();
     const password = String(req.body.password || '');
     if (!name || !/^\S+@\S+\.\S+$/.test(email) || password.length < 8) {

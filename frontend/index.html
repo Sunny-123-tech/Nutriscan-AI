@@ -139,11 +139,15 @@
                             placeholder="Minimum 8 characters">
                     </div>
 
-                    <div class="auth-step-actions">
+                    <div class="auth-step-actions" style="flex-direction: column; gap: 0.5rem;">
                         <button class="btn-primary btn-full" id="authSubmit" type="submit">Sign in</button>
                         <button class="btn-primary btn-full" id="btnNextStep1" type="button" style="display:none;"
                             onclick="goToOnboardingStep(2)">
                             Next: Body &amp; Goals <i class="fas fa-arrow-right"></i>
+                        </button>
+                        <button class="btn-secondary btn-full" id="btnQuickRegister" type="button" style="display:none;"
+                            onclick="submitAuth(event)">
+                            <i class="fas fa-bolt"></i> Quick Create Account
                         </button>
                     </div>
                 </div>
