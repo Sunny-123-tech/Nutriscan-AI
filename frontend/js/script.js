@@ -704,7 +704,7 @@
       else bmr = Math.round(10 * w + 6.25 * h - 5 * age + 5);
     }
     const actMult = { sedentary: 1.2, light: 1.375, moderate: 1.55, very: 1.725 };
-    const tdee = Math.round(bmr * (actMult[activity] || 1.375));
+    let tdee = Math.round(bmr * (actMult[activity] || 1.375));
 
     // 3. Goal-adjusted Calorie Target
     let targetCalories = tdee;
@@ -736,7 +736,7 @@
 
     // 7. Saturated Fat & Fiber
     let maxSatFat = Math.round((targetCalories * (heart || cholesterol || diabetes ? 0.06 : 0.08)) / 9);
-    const minFiber = gender === 'female' ? 25 : 35;
+    let minFiber = gender === 'female' ? 25 : 35;
 
     // Allow pre-calculated values from backend if present
     if (profile?.personalPlan) {

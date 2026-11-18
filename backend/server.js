@@ -2,7 +2,7 @@ const path = require('path');
 const dns = require('dns');
 try {
     dns.setServers(['8.8.8.8', '1.1.1.1']);
-} catch (e) {}
+} catch (e) { }
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 require('dotenv').config();
 
@@ -144,14 +144,14 @@ async function connectToDatabase() {
                 mealLogs: db.collection('mealLogs')
             };
 
-            await users.createIndex({ email: 1 }, { unique: true }).catch(() => {});
-            await products.createIndex({ barcode: 1 }, { unique: true }).catch(() => {});
-            await mealLogs.createIndex({ userId: 1, date: 1 }).catch(() => {});
-            await profiles.createIndex({ userId: 1 }, { unique: true }).catch(() => {});
+            await users.createIndex({ email: 1 }, { unique: true }).catch(() => { });
+            await products.createIndex({ barcode: 1 }, { unique: true }).catch(() => { });
+            await mealLogs.createIndex({ userId: 1, date: 1 }).catch(() => { });
+            await profiles.createIndex({ userId: 1 }, { unique: true }).catch(() => { });
 
             const existingProductCount = await products.countDocuments().catch(() => 0);
             if (existingProductCount === 0) {
-                await products.insertMany(getDefaultProducts()).catch(() => {});
+                await products.insertMany(getDefaultProducts()).catch(() => { });
                 console.log('🌱 Seeded default demo products into MongoDB.');
             }
             console.log(`🗄️  MongoDB Atlas connected successfully: ${db.databaseName}`);
