@@ -614,7 +614,7 @@
         if (res && res.profile) persistProfile(res.profile);
         
       } catch (e) {
-        console.warn('Could not sync profile to MongoDB:', e.message);
+        console.warn('Could not sync profile to backend:', e.message);
       }
     }
     updateAuthUI();
